@@ -13,9 +13,9 @@ public static class Moogle
     {
         for (int i = 0; i < array.Length; i++)
         {
-            for (int j = i + 1; j<array.Length;j++)
+            for (int j = i + 1; j < array.Length; j++)
             {
-                if (array[j].Score>array[i].Score)
+                if (array[j].Score > array[i].Score)
                 {
                     SearchItem max = array[j];
                     array[j] = array[i];
@@ -67,17 +67,38 @@ public static class Moogle
         }
 
         FilesOccur = DescendingSort(FilesOccur);
+        int ScoreZero = FilesOccur.Length;
 
-        SearchItem[] items =
+        for (int i = 0; i < FilesOccur.Length; i++)
         {
-            FilesOccur[0],
-            FilesOccur[1],
-            FilesOccur[2]
+            if (FilesOccur[i].Score == 0)
+            {
+                ScoreZero = i;
+                break;
+            }
+        }
 
-            // new SearchItem("Hello World", "Lorem ipsum dolor sit amet", 0.9f),
-            // new SearchItem("Hello World", "Lorem ipsum dolor sit amet", 0.5f),
-            // new SearchItem("Hello World", "Lorem ipsum dolor sit amet", 0.1f),
-        };
+
+        SearchItem[] items = new SearchItem[ScoreZero];
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            // items[i] = FilesOccur[0];
+            items[i] = FilesOccur[i];
+        }
+
+        // SearchItem[] items =
+        // {
+        //     // FilesOccur[0],
+        //     // FilesOccur[1],
+        //     // FilesOccur[2]
+
+        //     new SearchItem("Hello World", "Lorem ipsum dolor sit amet", 0.9f),
+        //     new SearchItem("Hello World", "Lorem ipsum dolor sit amet", 0.5f),
+        //     new SearchItem("Hello World", "Lorem ipsum dolor sit amet", 0.1f),
+        // };
+
+        // items = new SearchItem[3];
         return new SearchResult(items, query);
     }
 }
