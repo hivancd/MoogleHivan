@@ -43,12 +43,28 @@ public static class Moogle
         int occurrences = 0;
         int start = text.IndexOf(subs);
 
+        text = text.ToLower();
+        subs = subs.ToLower();
+
         if (start != -1)
         {
             occurrences++;
             occurrences = occurrences + CountOcurrences(text.Substring(start + subs.Length), subs);
         }
         return occurrences;
+    }
+
+    public static int SentenceCountOc(string text, string sentence)
+    {
+        string[] words = sentence.Split();
+        int totalOccur = 0;
+
+        foreach (string word in words)
+        {
+            totalOccur = totalOccur + Moogle.CountOcurrences(text, word);
+        }
+
+        return totalOccur;
     }
     public static SearchResult Query(string query)
     {
@@ -63,7 +79,7 @@ public static class Moogle
             string CurrentFile = File.ReadAllText(files[i]);
             string FileName = Path.GetFileNameWithoutExtension(files[i]);
             string snippet = "Fill the snippet dont be lazy";
-            FilesOccur[i] = new SearchItem(FileName, snippet, CountOcurrences(CurrentFile, query));
+            FilesOccur[i] = new SearchItem(FileName, snippet, SentenceCountOc(CurrentFile, query));
         }
 
         FilesOccur = DescendingSort(FilesOccur);
