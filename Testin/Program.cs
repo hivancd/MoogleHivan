@@ -1,41 +1,76 @@
 ﻿using MoogleEngine;
 using System.IO;
 
-string stop_words_archive = @"E:\Prog\00moogle\moogle-main\stopwords.txt";
-string[] stopwords = File.ReadAllLines(stop_words_archive);
+// string stop_words_archive = @"E:\Prog\00moogle\moogle-main\stopwords.txt";
+// string[] stopwords = File.ReadAllLines(stop_words_archive);
 
-bool Is_stop_words(string word ,string[] stopwords)
+string erase_whitespace(string sentence)
 {
-    if(stopwords.IndexOf())
-        return false;
-    return true;
+    string ans = "";
+
+    for (int i = 0; i < sentence.Length; i++)
+    {
+        if(!( sentence[i].ToString() == " " &&  ((i+1 == sentence.Length ) || (sentence[i+1].ToString() == " "))))
+            ans = ans + sentence[i] ;
+    }
+    return ans;
 }
 
-void Test_stopword()
+void Test_whitespace()
 {
-    Is_stop_words("de",stopwords);
-    Console.WriteLine(Is_stop_words("de",stopwords));
+    System.Console.WriteLine(erase_whitespace("can                                   can   df   e"));
 }
 
-Test_stopword();
+Test_whitespace();
+// string delete_stopwords(string sentence)
+// {
+//     string[] array_sentence = sentence.Split();
+//     string ans = "";
 
-void WriteSearchItem(SearchItem item)
-{
-    System.Console.WriteLine("Titulo:" + item.Title);
-    System.Console.WriteLine("Snippet:" + item.Snippet);
-    System.Console.WriteLine("Score:" + item.Score);
-}
+//     for (int i = 0; i < array_sentence.Length; i++)
+//     {
+//         if (!Is_stop_word(array_sentence[i]))
+//             ans = ans + array_sentence[i] + " ";
+//     }
+//     return ans;
+// }
 
-string GetSnip(string text,string word)
-{
-    int middle = text.IndexOf(word);
-    int SnipLeng = 30;
+// bool Is_stop_word(string word)
+// {
+//     string stop_words_archive = @"E:\Prog\00moogle\moogle-main\stopwords.txt";
+//     string[] stopwords = File.ReadAllLines(stop_words_archive);
 
-    if (middle<15)
-        return text.Substring(0,30);
-    
-    return text.Substring(middle-15,30);
-}
+//     if (stopwords.Contains(word.ToLower()))
+//         return true;
+//     return false;
+// }
+
+// void Test_stopword()
+// {
+//     // foreach( string line in stopwords)
+//     //     System.Console.Write(line + " ");
+//     System.Console.WriteLine(delete_stopwords("a las    d "));
+// }
+
+// Test_stopword();
+
+// void WriteSearchItem(SearchItem item)
+// {
+//     System.Console.WriteLine("Titulo:" + item.Title);
+//     System.Console.WriteLine("Snippet:" + item.Snippet);
+//     System.Console.WriteLine("Score:" + item.Score);
+// }
+
+// string GetSnip(string text, string word)
+// {
+//     int middle = text.IndexOf(word);
+//     int SnipLeng = 30;
+
+//     if (middle < 15)
+//         return text.Substring(0, 30);
+
+//     return text.Substring(middle - 15, 30);
+// }
 
 // void TestSnip()
 // {
@@ -94,13 +129,13 @@ string GetSnip(string text,string word)
 // {
 //     string[] sentences =
 //     {
-        // "",
-        // "de"
-    //  "el combate de los dioses",
-    //  "se caracteriza por",
-    //  "mascota",//5
-    //  "",//0
-    //  "adaptabilidad",
+// "",
+// "de"
+//  "el combate de los dioses",
+//  "se caracteriza por",
+//  "mascota",//5
+//  "",//0
+//  "adaptabilidad",
 //     };
 //     string Path = @"E:\Prog\00moogle\moogle-main\Content\Aliados El Combate de los dioses.txt";
 //     string Path1 = @"E:\Prog\00moogle\moogle-main\Content\mascotas.txt";

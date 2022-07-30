@@ -4,9 +4,19 @@ namespace MoogleEngine;
 
 public static class Moogle
 {
-    // TODO: Encontrar Frecuencia en el corpus
-    // TODO: Encontrar Repeticiones en el archivo
-    // Calcular TFIDF y comparar, coger 3 mas altos
+        // public static SearchItem Max(SearchItem[] array)//Este Metodo No es Necesario
+    // {
+    //     SearchItem Max = array[0];
+    //     for (int i = 0; i < array.Length; i++)
+    //     {
+    //         if (array[i].Score > Max.Score)
+    //             Max = array[i];
+    //     }
+    //     return Max;
+    // }
+
+    //Arreglar el snip
+    //No encuentra palabras acompannadas  de caracteres especiales(:,#,.,etc...)
     // Hacer Sugerncias
 
     public static SearchItem[] DescendingSort(SearchItem[] array)//Ordena Un Array De SearchItems de mayor a menor segun el Score
@@ -25,16 +35,6 @@ public static class Moogle
         }
         return array;
     }
-    // public static SearchItem Max(SearchItem[] array)//Este Metodo No es Necesario
-    // {
-    //     SearchItem Max = array[0];
-    //     for (int i = 0; i < array.Length; i++)
-    //     {
-    //         if (array[i].Score > Max.Score)
-    //             Max = array[i];
-    //     }
-    //     return Max;
-    // }
 
     public static int CountOcurrences(string text, string subs)//Cuenta las ocurrencias de una palabra en un texto
     {
@@ -85,6 +85,40 @@ public static class Moogle
         return " ";
     }
 
+    public static string erase_stopwords(string sentence)//This method erases stopwords from the query
+    {
+        string[] array_sentence = sentence.Split();
+        string ans = "";
+
+        for (int i = 0; i < array_sentence.Length; i++)
+        {
+            if (!Is_stop_word(array_sentence[i]))
+                ans = ans + array_sentence[i] + " ";
+        }
+        return ans;
+    }
+
+    public static string erase_whitespace(string sentence)//this method erases whitespace from the query
+    {
+        string ans = "";
+
+        for (int i = 0; i < sentence.Length; i++)
+        {
+            if (!(sentence[i].ToString() == " " && ((i + 1 == sentence.Length) || (sentence[i + 1].ToString() == " "))))
+                ans = ans + sentence[i];
+        }
+        return ans;
+    }
+    public static bool Is_stop_word(string word)//this method dtermines if a word is a stopword
+    {
+        string stop_words_archive = @"E:\Prog\00moogle\moogle-main\stopwords.txt";
+        string[] stopwords = File.ReadAllLines(stop_words_archive);
+
+        if (stopwords.Contains(word.ToLower()))
+            return true;
+        return false;
+    }
+
     public static SearchResult Query(string query)//Este es el metodo Principal
     {
         // Modifique este método para responder a la búsqueda
@@ -92,13 +126,15 @@ public static class Moogle
         string content = @"E:\Prog\00moogle\moogle-main\Content";
         string[] files = Directory.GetFiles(content);
         SearchItem[] FilesOccur = new SearchItem[files.Length];
+        string search_query = erase_whitespace(erase_stopwords(query));
+        query = erase_whitespace(query);
 
         for (int i = 0; i < files.Length; i++)
         {
             string CurrentFile = File.ReadAllText(files[i]);
             string FileName = Path.GetFileNameWithoutExtension(files[i]);
-            // string snippet = "Fill the snippet dont be lazy";
-            FilesOccur[i] = new SearchItem(FileName, GetSnip(CurrentFile, query), SentenceCountOc(CurrentFile, query));
+            string snippet = "Fix the snippet dont be lazy";//GetSnip(CurrentFile, query)
+            FilesOccur[i] = new SearchItem(FileName, snippet, SentenceCountOc(CurrentFile, search_query));
         }
 
         FilesOccur = DescendingSort(FilesOccur);
