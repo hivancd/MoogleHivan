@@ -9,7 +9,7 @@ public static class Moogle
     // Calcular TFIDF y comparar, coger 3 mas altos
     // Hacer Sugerncias
 
-    public static SearchItem[] DescendingSort(SearchItem[] array)//Solo funciona con arrays de  numeros positivos
+    public static SearchItem[] DescendingSort(SearchItem[] array)//Ordena Un Array De SearchItems de mayor a menor segun el Score
     {
         for (int i = 0; i < array.Length; i++)
         {
@@ -25,18 +25,18 @@ public static class Moogle
         }
         return array;
     }
-    public static SearchItem Max(SearchItem[] array)
-    {
-        SearchItem Max = array[0];
-        for (int i = 0; i < array.Length; i++)
-        {
-            if (array[i].Score > Max.Score)
-                Max = array[i];
-        }
-        return Max;
-    }
+    // public static SearchItem Max(SearchItem[] array)//Este Metodo No es Necesario
+    // {
+    //     SearchItem Max = array[0];
+    //     for (int i = 0; i < array.Length; i++)
+    //     {
+    //         if (array[i].Score > Max.Score)
+    //             Max = array[i];
+    //     }
+    //     return Max;
+    // }
 
-    public static int CountOcurrences(string text, string subs)
+    public static int CountOcurrences(string text, string subs)//Cuenta las ocurrencias de una palabra en un texto
     {
         if (subs == "")
             return 0;//No pincha porque el substring es ""
@@ -54,7 +54,8 @@ public static class Moogle
         return occurrences;
     }
 
-    public static int SentenceCountOc(string text, string sentence)
+    public static int SentenceCountOc(string text, string sentence)//Cuenta las ocurrencias de cada palabra de 
+                                                                   // una oracion en un texto y las suma 
     {
         string[] words = sentence.Split();
         int totalOccur = 0;
@@ -66,7 +67,25 @@ public static class Moogle
 
         return totalOccur;
     }
-    public static SearchResult Query(string query)
+
+    public static string GetSnip(string text, string word)//Este metod coge el snip (Es mejorable)
+    {
+        int middle = text.IndexOf(word);
+        int SnipLeng = 30;
+
+        if (middle > 0)
+        {
+            if (text.Length - middle <= SnipLeng)
+                return text.Substring(middle, text.Length);
+            if (middle < 15)
+                return text.Substring(0, SnipLeng);
+            else
+                return text.Substring(middle - 15, SnipLeng);
+        }
+        return " ";
+    }
+
+    public static SearchResult Query(string query)//Este es el metodo Principal
     {
         // Modifique este método para responder a la búsqueda
 
@@ -78,8 +97,8 @@ public static class Moogle
         {
             string CurrentFile = File.ReadAllText(files[i]);
             string FileName = Path.GetFileNameWithoutExtension(files[i]);
-            string snippet = "Fill the snippet dont be lazy";
-            FilesOccur[i] = new SearchItem(FileName, snippet, SentenceCountOc(CurrentFile, query));
+            // string snippet = "Fill the snippet dont be lazy";
+            FilesOccur[i] = new SearchItem(FileName, GetSnip(CurrentFile, query), SentenceCountOc(CurrentFile, query));
         }
 
         FilesOccur = DescendingSort(FilesOccur);
@@ -96,7 +115,6 @@ public static class Moogle
 
 
         SearchItem[] items = new SearchItem[ScoreZero];
-
         for (int i = 0; i < items.Length; i++)
         {
             // items[i] = FilesOccur[0];

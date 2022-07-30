@@ -1,4 +1,53 @@
 ﻿using MoogleEngine;
+using System.IO;
+
+string stop_words_archive = @"E:\Prog\00moogle\moogle-main\stopwords.txt";
+string[] stopwords = File.ReadAllLines(stop_words_archive);
+
+bool Is_stop_words(string word ,string[] stopwords)
+{
+    if(stopwords.IndexOf())
+        return false;
+    return true;
+}
+
+void Test_stopword()
+{
+    Is_stop_words("de",stopwords);
+    Console.WriteLine(Is_stop_words("de",stopwords));
+}
+
+Test_stopword();
+
+void WriteSearchItem(SearchItem item)
+{
+    System.Console.WriteLine("Titulo:" + item.Title);
+    System.Console.WriteLine("Snippet:" + item.Snippet);
+    System.Console.WriteLine("Score:" + item.Score);
+}
+
+string GetSnip(string text,string word)
+{
+    int middle = text.IndexOf(word);
+    int SnipLeng = 30;
+
+    if (middle<15)
+        return text.Substring(0,30);
+    
+    return text.Substring(middle-15,30);
+}
+
+// void TestSnip()
+// {
+//     var text = @"10) Aliados: el combate de los dioses, de Leandro Calderone Luego de que los seres de luz cumplieron con su misi�n, Venecia, Devi, �mbar, Luz, Inti y Gopal a�n est�n en la tierra. Pero, el se�or de la oscuridad los secuestra para estudiarlos y ver c�mo es la energ�a que desprenden y as� intentar crear una nueva raza de seres humanos exterminando a los corrompidos."
+//     ;
+//     var word = "combate";
+
+//     System.Console.WriteLine(GetSnip(text,word));
+// }
+
+// TestSnip();
+
 
 // int CountOcurrences(string text, string subs)//CountOccur Alternativo Cambia el if
 // {
@@ -23,33 +72,28 @@
 //     return occurrences;
 // }
 
-int SentenceCountOc(string text, string sentence)
-{
-    string[] words = sentence.Split();
-    int totalOccur = 0;
-
-    foreach (string word in words)
-    {
-        totalOccur = totalOccur + Moogle.CountOcurrences(text, word);
-        System.Console.WriteLine("palabr: " + word);
-        System.Console.WriteLine("occurences: " + Moogle.CountOcurrences(text, word));
-        System.Console.WriteLine("total: " + totalOccur);
-    }
-
-    return totalOccur;
-}
-
-// void WriteSearchItem(SearchItem item)
+// int SentenceCountOc(string text, string sentence)
 // {
-//     System.Console.WriteLine("Titulo:" + item.Title);
-//     System.Console.WriteLine("Snippet:" + item.Snippet);
-//     System.Console.WriteLine("Score:" + item.Score);
+//     string[] words = sentence.Split();
+//     int totalOccur = 0;
+
+//     foreach (string word in words)
+//     {
+//         totalOccur = totalOccur + Moogle.CountOcurrences(text, word);
+//         System.Console.WriteLine("palabr: " + word);
+//         System.Console.WriteLine("occurences: " + Moogle.CountOcurrences(text, word));
+//         System.Console.WriteLine("total: " + totalOccur);
+//     }
+
+//     return totalOccur;
 // }
 
-void Tester()
-{
-    string[] sentences =
-    {
+
+
+// void Tester()
+// {
+//     string[] sentences =
+//     {
         // "",
         // "de"
     //  "el combate de los dioses",
@@ -57,22 +101,22 @@ void Tester()
     //  "mascota",//5
     //  "",//0
     //  "adaptabilidad",
-    };
-    string Path = @"E:\Prog\00moogle\moogle-main\Content\Aliados El Combate de los dioses.txt";
-    string Path1 = @"E:\Prog\00moogle\moogle-main\Content\mascotas.txt";
+//     };
+//     string Path = @"E:\Prog\00moogle\moogle-main\Content\Aliados El Combate de los dioses.txt";
+//     string Path1 = @"E:\Prog\00moogle\moogle-main\Content\mascotas.txt";
 
-    foreach (string sentence in sentences)
-    {
-        System.Console.WriteLine("sentence: " + sentence);
-        System.Console.WriteLine(SentenceCountOc(File.ReadAllText(Path), sentence));
-        // System.Console.WriteLine(CountOcurrences(File.ReadAllText(Path), sentence));
-        System.Console.WriteLine(SentenceCountOc(File.ReadAllText(Path1), sentence));
+//     foreach (string sentence in sentences)
+//     {
+//         System.Console.WriteLine("sentence: " + sentence);
+//         System.Console.WriteLine(SentenceCountOc(File.ReadAllText(Path), sentence));
+//         // System.Console.WriteLine(CountOcurrences(File.ReadAllText(Path), sentence));
+//         System.Console.WriteLine(SentenceCountOc(File.ReadAllText(Path1), sentence));
 
-    }
+//     }
 
-}
+// }
 
-Tester();
+// Tester();
 
 
 
