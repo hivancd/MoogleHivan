@@ -9,6 +9,11 @@ public class SearchItem
         this.Score = score;
     }
 
+    public override string ToString()
+    {
+        return "SearchItem<" + this.Title + " " + this.Snippet + " " + this.Score + ">";
+    }
+
     public string Title { get; private set; }
 
     public string Snippet { get; private set; }
