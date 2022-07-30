@@ -4,24 +4,24 @@ using System.IO;
 // string stop_words_archive = @"E:\Prog\00moogle\moogle-main\stopwords.txt";
 // string[] stopwords = File.ReadAllLines(stop_words_archive);
 
-string erase_whitespace(string sentence)
-{
-    string ans = "";
+// string erase_whitespace(string sentence)
+// {
+//     string ans = "";
 
-    for (int i = 0; i < sentence.Length; i++)
-    {
-        if(!( sentence[i].ToString() == " " &&  ((i+1 == sentence.Length ) || (sentence[i+1].ToString() == " "))))
-            ans = ans + sentence[i] ;
-    }
-    return ans;
-}
+//     for (int i = 0; i < sentence.Length; i++)
+//     {
+//         if(!( sentence[i].ToString() == " " &&  ((i+1 == sentence.Length ) || (sentence[i+1].ToString() == " "))))
+//             ans = ans + sentence[i] ;
+//     }
+//     return ans;
+// }
 
-void Test_whitespace()
-{
-    System.Console.WriteLine(erase_whitespace("can                                   can   df   e"));
-}
+// void Test_whitespace()
+// {
+//     System.Console.WriteLine(erase_whitespace("can                                   can   df   e"));
+// }
 
-Test_whitespace();
+// Test_whitespace();
 // string delete_stopwords(string sentence)
 // {
 //     string[] array_sentence = sentence.Split();
@@ -239,3 +239,7 @@ Test_whitespace();
 
 
 
+ 
+
+SearchItem item  = new SearchItem("Ultimo", "Lorem ipsum dolor sit amet", 9);
+System.Console.WriteLine(item);

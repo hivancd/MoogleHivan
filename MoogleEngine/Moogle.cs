@@ -62,7 +62,8 @@ public static class Moogle
 
         foreach (string word in words)
         {
-            totalOccur = totalOccur + Moogle.CountOcurrences(text, word);
+            // TFidf = tf(text, word) * idf(word)
+            totalOccur += Moogle.CountOcurrences(text, word);
         }
 
         return totalOccur;
