@@ -4,7 +4,7 @@ using System.IO;
 // Dictionary<string, int> dict = new Dictionary<string, int>();
 
 // This method returns a dict with each word in the query and the amount of files in wich it appears
-Dictionary<string, int> Query_and_docs_with_occur(string[] search_query_array, string[] files)
+Dictionary<string, int> Query_and_docs_occur(string[] search_query_array, string[] files)
 {
     Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);
 
@@ -26,27 +26,22 @@ Dictionary<string, int> Query_and_docs_with_occur(string[] search_query_array, s
     return dict;
 }
 
+double tf_idf(Dictionary<string,int> Query_docs_occur,string text,int words_in_text,int docs_in_corpus)
+{
+    double tf_idf = 0;
+
+    foreach(string word in Query_docs_occur.Keys)
+    {
+        tf_idf += Moogle.tf(text,word)*Moogle.idf(docs_in_corpus,Query_docs_occur[word]);
+    }
+
+    return tf_idf;
+}
+
 string[] test_array = {@"E:\Prog\00moogle\moogle-main\Content\Aliados El Combate de los dioses.txt",@"E:\Prog\00moogle\moogle-main\Content\Aliados entre el Cielo y la Tierra.txt"};
 string[] test_query_example = {"","dinosaurios"};
 Dictionary<string, int> dict = Query_and_docs_with_occur(test_query_example, test_array);
-foreach(var item in dict)
-    System.Console.WriteLine(item );
 
-
-// double tf_idf(string[] search_query_array,int words_in_text,int docs_in_corpus,int[] docs_with_occur)
-// {
-//     double tf_idf = 0;
-
-
-// // foreach (string file in files)
-// // {
-// //     string[] current_file = File.ReadAllText(file).Split();
-// //     foreach (string word in current_file)
-// //     {
-// //         if (search_query_array.Contains(word))
-// //             }
-// // }
-// }
 
 
 
