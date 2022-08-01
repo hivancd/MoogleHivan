@@ -1,6 +1,35 @@
 ﻿using MoogleEngine;
 using System.IO;
 
+// int FilesOccur
+
+
+
+
+double tf (int raw_count,string text)
+{
+    string[] text_array = text.Split();
+    return ((double)raw_count/(double)(text_array.Length));
+}
+
+double idf(int docs_in_corpus,int docs_with_occur)
+{
+    if(docs_with_occur == 0 || docs_in_corpus == docs_with_occur)
+        return 0;
+    return Math.Log(10,(double)docs_in_corpus/(double)docs_with_occur);
+}
+
+// System.Console.WriteLine(TF(4,"pldsk paek ldkoekfod sdkmfol sdlkfm skmsokd sdsfs e rsf fsvgs asaf  sfsf sdsa sdsf "));
+// System.Console.WriteLine(idf(100,100));
+
+
+
+
+
+
+
+
+
 // string stop_words_archive = @"E:\Prog\00moogle\moogle-main\stopwords.txt";
 // string[] stopwords = File.ReadAllLines(stop_words_archive);
 
@@ -241,5 +270,5 @@ using System.IO;
 
  
 
-SearchItem item  = new SearchItem("Ultimo", "Lorem ipsum dolor sit amet", 9);
-System.Console.WriteLine(item);
+// SearchItem item  = new SearchItem("Ultimo", "Lorem ipsum dolor sit amet", 9);
+// System.Console.WriteLine(item);
