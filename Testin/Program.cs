@@ -1,23 +1,67 @@
 ﻿using MoogleEngine;
 using System.IO;
 
-// int FilesOccur
+// Dictionary<string, int> dict = new Dictionary<string, int>();
 
-
-
-
-double tf (int raw_count,string text)
+// This method returns a dict with each word in the query and the amount of files in wich it appears
+Dictionary<string, int> Query_and_docs_with_occur(string[] search_query_array, string[] files)
 {
-    string[] text_array = text.Split();
-    return ((double)raw_count/(double)(text_array.Length));
+    Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);
+
+    foreach(string word in search_query_array )
+        dict.Add(word, 0);
+    
+    for(int i = 0; i < files.Length; i++)
+    {
+        string CurrentFile = File.ReadAllText(files[i]);
+
+        foreach(string word in search_query_array)
+        {
+            if (word==""||word==" ")
+                continue;
+            else if(CurrentFile.Contains(word))
+                dict[word] += 1;
+        }
+    }    
+    return dict;
 }
 
-double idf(int docs_in_corpus,int docs_with_occur)
-{
-    if(docs_with_occur == 0 || docs_in_corpus == docs_with_occur)
-        return 0;
-    return Math.Log(10,(double)docs_in_corpus/(double)docs_with_occur);
-}
+string[] test_array = {@"E:\Prog\00moogle\moogle-main\Content\Aliados El Combate de los dioses.txt",@"E:\Prog\00moogle\moogle-main\Content\Aliados entre el Cielo y la Tierra.txt"};
+string[] test_query_example = {"","dinosaurios"};
+Dictionary<string, int> dict = Query_and_docs_with_occur(test_query_example, test_array);
+foreach(var item in dict)
+    System.Console.WriteLine(item );
+
+
+// double tf_idf(string[] search_query_array,int words_in_text,int docs_in_corpus,int[] docs_with_occur)
+// {
+//     double tf_idf = 0;
+
+
+// // foreach (string file in files)
+// // {
+// //     string[] current_file = File.ReadAllText(file).Split();
+// //     foreach (string word in current_file)
+// //     {
+// //         if (search_query_array.Contains(word))
+// //             }
+// // }
+// }
+
+
+
+// double tf (int raw_count,int words_in_text)
+// {
+//   
+//     return ((double)raw_count/(double)words_in_text);
+// }
+
+// double idf(int docs_in_corpus,int docs_with_occur)
+// {
+//     if(docs_with_occur == 0 || docs_in_corpus == docs_with_occur)
+//         return 0;
+//     return Math.Log(10,(double)docs_in_corpus/(double)docs_with_occur);
+// }
 
 // System.Console.WriteLine(TF(4,"pldsk paek ldkoekfod sdkmfol sdlkfm skmsokd sdsfs e rsf fsvgs asaf  sfsf sdsa sdsf "));
 // System.Console.WriteLine(idf(100,100));
@@ -268,7 +312,7 @@ double idf(int docs_in_corpus,int docs_with_occur)
 
 
 
- 
+
 
 // SearchItem item  = new SearchItem("Ultimo", "Lorem ipsum dolor sit amet", 9);
 // System.Console.WriteLine(item);
