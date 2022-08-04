@@ -19,7 +19,19 @@ public static class Moogle
     //No encuentra palabras acompannadas  de caracteres especiales(:,#,.,etc...)
     // Hacer Sugerncias
 
-
+    public static List<string> GetNotAllowedWords(string query)
+    {
+        string[] query_array = query.Split();
+        List<string> GetNotAllowedWords = new List<string>();
+        if (query == "")
+            return GetNotAllowedWords;
+        foreach (string word in query_array)
+        {
+            if (word[0].ToString() == "!")
+                GetNotAllowedWords.Add(word.Substring(1));
+        }
+        return GetNotAllowedWords;
+    }
 
     public static string GetSnip(string text, string word)//Este metodo coge el snip (Es mejorable)ARREGLAR
     {
@@ -96,8 +108,8 @@ public static class Moogle
 
     public static double idf(int docs_in_corpus, int docs_with_occur)
     {
-        if (docs_with_occur == 0 || docs_in_corpus == docs_with_occur)
-            return 0;
+            if (docs_with_occur == 0 || docs_in_corpus == docs_with_occur)
+                return 0;   
         return Math.Log(10, (double)docs_in_corpus / (double)docs_with_occur);
     }
 
@@ -124,10 +136,16 @@ public static class Moogle
         return dict;
     }
 
-    public static double tf_idf(Dictionary<string, int> Query_docs_occur, string text, int words_in_text, int docs_in_corpus)
+    public static double tf_idf(Dictionary<string, int> Query_docs_occur, string text, int words_in_text, int docs_in_corpus, string query)
     {
         double tf_idf = 0;
+        List<string> NotAllowedWords = GetNotAllowedWords(query);
 
+        foreach(string word in NotAllowedWords)
+        {
+            if(text.Contains(word))
+            return tf_idf;
+        }
         foreach (string word in Query_docs_occur.Keys)
         {
             tf_idf += Moogle.tf(text, word) * Moogle.idf(docs_in_corpus, Query_docs_occur[word]);
@@ -175,12 +193,10 @@ public static class Moogle
         string[] files = Directory.GetFiles(content);
         string search_query = erase_whitespace(erase_stopwords(query));
         string[] search_query_array = search_query.Split();
-        Dictionary<string,int> query_and_docs_occur = Query_and_docs_occur(search_query_array,files);
-
+        Dictionary<string, int> query_and_docs_occur = Query_and_docs_occur(search_query_array, files);
 
         SearchItem[] FilesOccur = new SearchItem[files.Length];
-
-
+        
         query = erase_whitespace(query);
 
         for (int i = 0; i < files.Length; i++)
@@ -190,7 +206,8 @@ public static class Moogle
             int FileSize = CurrentFile.Split().Length;
             string FileName = Path.GetFileNameWithoutExtension(files[i]);
             string snippet = "Fix the snippet dont be lazy";//GetSnip(CurrentFile, query)
-            double Score = tf_idf(query_and_docs_occur,CurrentFile,FileSize,files.Length);
+            double Score = tf_idf(query_and_docs_occur, CurrentFile, FileSize, files.Length,search_query);
+            
             FilesOccur[i] = new SearchItem(FileName, snippet, (float)Score);
             // tf(count Occur,CurrentFile)
             // idf(files.Length,docsOccur)
@@ -215,6 +232,10 @@ public static class Moogle
             items[i] = FilesOccur[i];
         }
 
+        // foreach(SearchItem item in items)
+        //     System.Console.WriteLine(item);
+
+
         return new SearchResult(items, query);
     }
 }
@@ -230,3 +251,15 @@ public static class Moogle
 // };
 
 // items = new SearchItem[3];
+
+
+
+// 0.01905176112949586
+// 0.004127538426740262
+// 0.0005930665979622655
+// 0.0027132793128165906
+// 0.00010239393220392612
+// 0.0004787893682015874
+// 0.001105896176125092
+// 0.0013115821798971503
+// 0.0026231643597943006

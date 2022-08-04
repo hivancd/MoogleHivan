@@ -1,46 +1,89 @@
 ﻿using MoogleEngine;
 using System.IO;
 
+
+// campo
+
+// Sit Rev y su Importancia ...
+// animales salvajes
+// perros
+
+// los juegos del hambre
+
+// gatos
+
+// Filosofía en Grecia
+
+// gato
+
+// gatos
+
+// mascotas
+
+// perros
+
+// Coincidencias: gatos perros
+List<string> NotAllowedWords(string query)
+{
+    string[] query_array = query.Split();
+    List<string> NotAllowedWords = new List<string>();
+    if (query == "")
+        return NotAllowedWords;
+    foreach (string word in query_array)
+    {
+        if (word[0].ToString() == "!")
+            NotAllowedWords.Add(word.Substring(1));
+    }
+    return NotAllowedWords;
+}
+
+string NotAllowedExample = "pepe el !grand";
+
+List<string> NotAllowedTest = NotAllowedWords(NotAllowedExample);
+
+foreach (string word in NotAllowedTest)
+    System.Console.WriteLine(word);
+
 // Dictionary<string, int> dict = new Dictionary<string, int>();
 
 // This method returns a dict with each word in the query and the amount of files in wich it appears
-Dictionary<string, int> Query_and_docs_occur(string[] search_query_array, string[] files)
-{
-    Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);
+// Dictionary<string, int> Query_and_docs_occur(string[] search_query_array, string[] files)
+// {
+//     Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);s
 
-    foreach(string word in search_query_array )
-        dict.Add(word, 0);
-    
-    for(int i = 0; i < files.Length; i++)
-    {
-        string CurrentFile = File.ReadAllText(files[i]);
+//     foreach(string word in search_query_array )
+//         dict.Add(word, 0);
 
-        foreach(string word in search_query_array)
-        {
-            if (word==""||word==" ")
-                continue;
-            else if(CurrentFile.Contains(word))
-                dict[word] += 1;
-        }
-    }    
-    return dict;
-}
+//     for(int i = 0; i < files.Length; i++)
+//     {
+//         string CurrentFile = File.ReadAllText(files[i]);
 
-double tf_idf(Dictionary<string,int> Query_docs_occur,string text,int words_in_text,int docs_in_corpus)
-{
-    double tf_idf = 0;
+//         foreach(string word in search_query_array)
+//         {
+//             if (word==""||word==" ")
+//                 continue;
+//             else if(CurrentFile.Contains(word))
+//                 dict[word] += 1;
+//         }
+//     }    
+//     return dict;
+// }
 
-    foreach(string word in Query_docs_occur.Keys)
-    {
-        tf_idf += Moogle.tf(text,word)*Moogle.idf(docs_in_corpus,Query_docs_occur[word]);
-    }
+// double tf_idf(Dictionary<string,int> Query_docs_occur,string text,int words_in_text,int docs_in_corpus)
+// {
+//     double tf_idf = 0;
 
-    return tf_idf;
-}
+//     foreach(string word in Query_docs_occur.Keys)
+//     {
+//         tf_idf += Moogle.tf(text,word)*Moogle.idf(docs_in_corpus,Query_docs_occur[word]);
+//     }
 
-string[] test_array = {@"E:\Prog\00moogle\moogle-main\Content\Aliados El Combate de los dioses.txt",@"E:\Prog\00moogle\moogle-main\Content\Aliados entre el Cielo y la Tierra.txt"};
-string[] test_query_example = {"","dinosaurios"};
-Dictionary<string, int> dict = Query_and_docs_with_occur(test_query_example, test_array);
+//     return tf_idf;
+// }
+
+// string[] test_array = {@"E:\Prog\00moogle\moogle-main\Content\Aliados El Combate de los dioses.txt",@"E:\Prog\00moogle\moogle-main\Content\Aliados entre el Cielo y la Tierra.txt"};
+// string[] test_query_example = {"","dinosaurios"};
+// Dictionary<string, int> dict = Query_and_docs_with_occur(test_query_example, test_array);
 
 
 
