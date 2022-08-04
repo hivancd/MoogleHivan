@@ -1,28 +1,20 @@
 ﻿using MoogleEngine;
 using System.IO;
 
+List<string> GetNecessaryWords(string query)
+{
+    string[] query_array = query.Split();
+    List<string> GetNecessaryWords = new List<string>();
+    if (query == "")
+        return GetNecessaryWords;
+    foreach (string word in query_array)
+    {
+        if (word[0].ToString() == "^")
+            GetNecessaryWords.Add(word.Substring(1));
+    }
+    return GetNecessaryWords;
+}
 
-// campo
-
-// Sit Rev y su Importancia ...
-// animales salvajes
-// perros
-
-// los juegos del hambre
-
-// gatos
-
-// Filosofía en Grecia
-
-// gato
-
-// gatos
-
-// mascotas
-
-// perros
-
-// Coincidencias: gatos perros
 List<string> NotAllowedWords(string query)
 {
     string[] query_array = query.Split();

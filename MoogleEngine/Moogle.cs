@@ -108,8 +108,8 @@ public static class Moogle
 
     public static double idf(int docs_in_corpus, int docs_with_occur)
     {
-            if (docs_with_occur == 0 || docs_in_corpus == docs_with_occur)
-                return 0;   
+        if (docs_with_occur == 0 || docs_in_corpus == docs_with_occur)
+            return 0;
         return Math.Log(10, (double)docs_in_corpus / (double)docs_with_occur);
     }
 
@@ -136,15 +136,34 @@ public static class Moogle
         return dict;
     }
 
+    public static List<string> GetNecessaryWords(string query)
+    {
+        string[] query_array = query.Split();
+        List<string> GetNecessaryWords = new List<string>();
+        if (query == "")
+            return GetNecessaryWords;
+        foreach (string word in query_array)
+        {
+            if (word[0].ToString() == "^")
+                GetNecessaryWords.Add(word.Substring(1));
+        }
+        return GetNecessaryWords;
+    }
     public static double tf_idf(Dictionary<string, int> Query_docs_occur, string text, int words_in_text, int docs_in_corpus, string query)
     {
         double tf_idf = 0;
         List<string> NotAllowedWords = GetNotAllowedWords(query);
+        List<string> NecessaryWords = GetNecessaryWords(query);
 
-        foreach(string word in NotAllowedWords)
+        foreach (string word in NecessaryWords)
         {
-            if(text.Contains(word))
-            return tf_idf;
+            if (!text.Contains(word))
+                return tf_idf;
+        }
+        foreach (string word in NotAllowedWords)
+        {
+            if (text.Contains(word))
+                return tf_idf;
         }
         foreach (string word in Query_docs_occur.Keys)
         {
@@ -196,7 +215,7 @@ public static class Moogle
         Dictionary<string, int> query_and_docs_occur = Query_and_docs_occur(search_query_array, files);
 
         SearchItem[] FilesOccur = new SearchItem[files.Length];
-        
+
         query = erase_whitespace(query);
 
         for (int i = 0; i < files.Length; i++)
@@ -206,8 +225,8 @@ public static class Moogle
             int FileSize = CurrentFile.Split().Length;
             string FileName = Path.GetFileNameWithoutExtension(files[i]);
             string snippet = "Fix the snippet dont be lazy";//GetSnip(CurrentFile, query)
-            double Score = tf_idf(query_and_docs_occur, CurrentFile, FileSize, files.Length,search_query);
-            
+            double Score = tf_idf(query_and_docs_occur, CurrentFile, FileSize, files.Length, search_query);
+
             FilesOccur[i] = new SearchItem(FileName, snippet, (float)Score);
             // tf(count Occur,CurrentFile)
             // idf(files.Length,docsOccur)
