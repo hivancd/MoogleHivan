@@ -1,6 +1,26 @@
 # algoritmo
 ## TF-IDF 
+TF-IDF es una estadistica numerica cuyo objetivo es reflejar la importancia de un termino o grupo de terminos en un grupo de documentos.
+Su formula se calcula:
+Tf*Idf
+(Term Frecuency & Inverse Term Frecuency)
+Esta estadistica es la base del programa de busqueda !Moogle
+El siguiente codigo es el metodo tf_idf que obtiene este valor:
+(Aqui se excluyen la utilizacion de los metodos de operadores, ya que estos no vienen al caso)
+```csharp
+    public static double tf_idf(Dictionary<string, int> Query_docs_occur, string text, int words_in_text, int docs_in_corpus, string query)
+    {
+        double tf_idf = 0;// Primero se crea la variable que ha de ser devuelva
 
+        foreach (string word in Query_docs_occur.Keys)// Aqui se entra en un loop por cada palabra de la query Las cuales son las keys de este diccionario, siendo los values la cantidad de documentos en las que estas aparecen (Mas adelante se explicara el metodo que crea este diccionario)
+        {                                                 
+            tf_idf += Moogle.tf(text, word) * Moogle.idf(docs_in_corpus, Query_docs_occur[word]);// El tf-idf de la query es la suma de el tf-idf de cada palabra
+        }
+
+        return tf_idf;
+    }
+
+```
 ### TF 
 TF(Term Frecuency)
 Es la frecuencia relativa de un termino t en un documento d
