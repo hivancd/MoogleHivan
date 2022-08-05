@@ -18,7 +18,59 @@ public static class Moogle
     //Arreglar el snip
     //No encuentra palabras acompannadas  de caracteres especiales(:,#,.,etc...)
     // Hacer Sugerncias
+    public static SearchResult Query(string query)//Este es el metodo PrincipalMAIN METHOD
+    {
+        // Modifique este método para responder a la búsqueda
 
+        string content = @"E:\Prog\00moogle\moogle-main\Content";
+        string[] files = Directory.GetFiles(content);
+        string search_query = erase_whitespace(erase_stopwords(query));
+        string[] search_query_array = search_query.Split();
+        Dictionary<string, int> query_and_docs_occur = Query_and_docs_occur(search_query_array, files);
+
+        SearchItem[] FilesOccur = new SearchItem[files.Length];
+
+        query = erase_whitespace(query);
+
+        for (int i = 0; i < files.Length; i++)
+        {
+            // CurrentFile.Length para el tf
+            string CurrentFile = File.ReadAllText(files[i]);
+            int FileSize = CurrentFile.Split().Length;
+            string FileName = Path.GetFileNameWithoutExtension(files[i]);
+            string snippet = GetSnip(CurrentFile, query);
+            double Score = tf_idf(query_and_docs_occur, CurrentFile, FileSize, files.Length, search_query);
+
+            FilesOccur[i] = new SearchItem(FileName, snippet, (float)Score);
+            // tf(count Occur,CurrentFile)
+            // idf(files.Length,docsOccur)
+        }
+
+        FilesOccur = DescendingSort(FilesOccur);
+        int ScoreZero = FilesOccur.Length;
+
+        for (int i = 0; i < FilesOccur.Length; i++)
+        {
+            if (FilesOccur[i].Score == 0)
+            {
+                ScoreZero = i;
+                break;
+            }
+        }
+
+        SearchItem[] items = new SearchItem[ScoreZero];
+        for (int i = 0; i < items.Length; i++)
+        {
+            // items[i] = FilesOccur[0];
+            items[i] = FilesOccur[i];
+        }
+
+        // foreach(SearchItem item in items)
+        //     System.Console.WriteLine(item);
+
+
+        return new SearchResult(items, query);
+    }
     public static List<string> GetNotAllowedWords(string query)
     {
         string[] query_array = query.Split();
@@ -204,59 +256,7 @@ public static class Moogle
         }
         return array;
     }
-    public static SearchResult Query(string query)//Este es el metodo PrincipalMAIN METHOD
-    {
-        // Modifique este método para responder a la búsqueda
 
-        string content = @"E:\Prog\00moogle\moogle-main\Content";
-        string[] files = Directory.GetFiles(content);
-        string search_query = erase_whitespace(erase_stopwords(query));
-        string[] search_query_array = search_query.Split();
-        Dictionary<string, int> query_and_docs_occur = Query_and_docs_occur(search_query_array, files);
-
-        SearchItem[] FilesOccur = new SearchItem[files.Length];
-
-        query = erase_whitespace(query);
-
-        for (int i = 0; i < files.Length; i++)
-        {
-            // CurrentFile.Length para el tf
-            string CurrentFile = File.ReadAllText(files[i]);
-            int FileSize = CurrentFile.Split().Length;
-            string FileName = Path.GetFileNameWithoutExtension(files[i]);
-            string snippet = "Fix the snippet dont be lazy";//GetSnip(CurrentFile, query)
-            double Score = tf_idf(query_and_docs_occur, CurrentFile, FileSize, files.Length, search_query);
-
-            FilesOccur[i] = new SearchItem(FileName, snippet, (float)Score);
-            // tf(count Occur,CurrentFile)
-            // idf(files.Length,docsOccur)
-        }
-
-        FilesOccur = DescendingSort(FilesOccur);
-        int ScoreZero = FilesOccur.Length;
-
-        for (int i = 0; i < FilesOccur.Length; i++)
-        {
-            if (FilesOccur[i].Score == 0)
-            {
-                ScoreZero = i;
-                break;
-            }
-        }
-
-        SearchItem[] items = new SearchItem[ScoreZero];
-        for (int i = 0; i < items.Length; i++)
-        {
-            // items[i] = FilesOccur[0];
-            items[i] = FilesOccur[i];
-        }
-
-        // foreach(SearchItem item in items)
-        //     System.Console.WriteLine(item);
-
-
-        return new SearchResult(items, query);
-    }
 }
 // SearchItem[] items =
 // {
