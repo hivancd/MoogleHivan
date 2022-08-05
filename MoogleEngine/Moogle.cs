@@ -85,19 +85,25 @@ public static class Moogle
         return GetNotAllowedWords;
     }
 
-    public static string GetSnip(string text, string word)//Este metodo coge el snip (Es mejorable)ARREGLAR
+    public static string GetSnip(string text, string query)//Este metodo coge el snip (Es mejorable)ARREGLAR
     {
-        int middle = text.IndexOf(word);
+        string[] query_array = query.Split();
+        int middle = -1;
         int SnipLeng = 30;
 
-        if (middle > 0)
+        foreach (string word in query_array)
         {
-            if (text.Length - middle <= SnipLeng)
-                return text.Substring(middle, text.Length);
-            if (middle < 15)
-                return text.Substring(0, SnipLeng);
-            else
-                return text.Substring(middle - 15, SnipLeng);
+            middle = text.IndexOf(word);
+            if (middle >= 0)
+            {
+                if (text.Length - middle <= SnipLeng)
+                    return text.Substring(middle, text.Length);
+                if (middle < 15)
+                    return text.Substring(0, SnipLeng);
+                else
+                    return text.Substring(middle - 15, SnipLeng);
+            }
+
         }
         return " ";
     }
