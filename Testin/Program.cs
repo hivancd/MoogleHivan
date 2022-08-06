@@ -1,40 +1,70 @@
 ﻿using MoogleEngine;
 using System.IO;
+using System.Text.RegularExpressions;
+using System;
 
-List<string> GetNecessaryWords(string query)
+int GetCLoseWords(string text, string query)
 {
+    string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
+    Regex obj = new Regex(pattern);
+
+    List<int> distances = new List<int>();
+    int distance = 0;
+    int ans =0;
     string[] query_array = query.Split();
-    List<string> GetNecessaryWords = new List<string>();
-    if (query == "")
-        return GetNecessaryWords;
-    foreach (string word in query_array)
+
+    for (int i = 0; i < query_array.Length - 2; i++)
     {
-        if (word[0].ToString() == "^")
-            GetNecessaryWords.Add(word.Substring(1));
+        int LeftWordIndex = text.IndexOf(query_array[i]);
+        int RightWordIndex = text.IndexOf(query_array[i + 2]);
+
+        if (obj.IsMatch(query_array[i + 1]) && LeftWordIndex >= 0 && RightWordIndex >= 0)
+        {
+            distance = (Math.Abs(LeftWordIndex - RightWordIndex));
+            distances.Add(distance);
+        }
     }
-    return GetNecessaryWords;
+    foreach(int e in distances)
+        ans += e;
+        
+    return ans;
 }
 
-List<string> NotAllowedWords(string query)
-{
-    string[] query_array = query.Split();
-    List<string> NotAllowedWords = new List<string>();
-    if (query == "")
-        return NotAllowedWords;
-    foreach (string word in query_array)
-    {
-        if (word[0].ToString() == "!")
-            NotAllowedWords.Add(word.Substring(1));
-    }
-    return NotAllowedWords;
-}
+System.Console.WriteLine(GetCLoseWords("Esta tortuga es demasiado lenta", "tortuga ~ demasiado"));
+// List<string> GetNecessaryWords(string query)
+// {
+//     string[] query_array = query.Split();
+//     List<string> GetNecessaryWords = new List<string>();
+//     if (query == "")
+//         return GetNecessaryWords;
+//     foreach (string word in query_array)
+//     {
+//         if (word[0].ToString() == "^")
+//             GetNecessaryWords.Add(word.Substring(1));
+//     }
+//     return GetNecessaryWords;
+// }
 
-string NotAllowedExample = "pepe el !grand";
+// List<string> NotAllowedWords(string query)
+// {
+//     string[] query_array = query.Split();
+//     List<string> NotAllowedWords = new List<string>();
+//     if (query == "")
+//         return NotAllowedWords;
+//     foreach (string word in query_array)
+//     {
+//         if (word[0].ToString() == "!")
+//             NotAllowedWords.Add(word.Substring(1));
+//     }
+//     return NotAllowedWords;
+// }
 
-List<string> NotAllowedTest = NotAllowedWords(NotAllowedExample);
+// string NotAllowedExample = "pepe el !grand";
 
-foreach (string word in NotAllowedTest)
-    System.Console.WriteLine(word);
+// List<string> NotAllowedTest = NotAllowedWords(NotAllowedExample);
+
+// foreach (string word in NotAllowedTest)
+//     System.Console.WriteLine(word);
 
 // Dictionary<string, int> dict = new Dictionary<string, int>();
 
