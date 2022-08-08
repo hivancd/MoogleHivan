@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MoogleEngine;
 
@@ -71,6 +72,29 @@ public static class Moogle
 
         return new SearchResult(items, query);
     }
+    public static double tf_idf(Dictionary<string, int> Query_docs_occur, string text, int words_in_text, int docs_in_corpus, string query)
+    {
+        double tf_idf = 0;
+        List<string> NotAllowedWords = GetNotAllowedWords(query);
+        List<string> NecessaryWords = GetNecessaryWords(query);
+
+        foreach (string word in NecessaryWords)
+        {
+            if (!text.Contains(word))
+                return tf_idf;
+        }
+        foreach (string word in NotAllowedWords)
+        {
+            if (text.Contains(word))
+                return tf_idf;
+        }
+        foreach (string word in Query_docs_occur.Keys)
+        {
+            tf_idf += Moogle.tf(text, word) * Moogle.idf(docs_in_corpus, Query_docs_occur[word]);// + 1/GetCLoseWords(text, query);
+        }
+
+        return tf_idf;
+    }
     public static List<string> GetNotAllowedWords(string query)
     {
         string[] query_array = query.Split();
@@ -84,7 +108,32 @@ public static class Moogle
         }
         return GetNotAllowedWords;
     }
+    static public int GetCLoseWords(string text, string query)
+    {
+        string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
+        Regex obj = new Regex(pattern);
 
+        List<int> distances = new List<int>();
+        int distance = 0;
+        int ans = 0;
+        string[] query_array = query.Split();
+
+        for (int i = 0; i < query_array.Length - 2; i++)
+        {
+            int LeftWordIndex = text.IndexOf(query_array[i]);
+            int RightWordIndex = text.IndexOf(query_array[i + 2]);
+
+            if (obj.IsMatch(query_array[i + 1]) && LeftWordIndex >= 0 && RightWordIndex >= 0)
+            {
+                distance = (Math.Abs(LeftWordIndex - RightWordIndex));
+                distances.Add(distance);
+            }
+        }
+        foreach (int e in distances)
+            ans += e;
+
+        return ans;
+    }
     public static string GetSnip(string text, string query)//Este metodo coge el snip (Es mejorable)ARREGLAR
     {
         string[] query_array = query.Split();
@@ -96,14 +145,16 @@ public static class Moogle
             middle = text.IndexOf(word);
             if (middle >= 0)
             {
+                if (text.Length <= SnipLeng)
+                    return text;
                 if (text.Length - middle <= SnipLeng)
-                    return text.Substring(middle, text.Length);
+                    return text.Substring(middle, text.Length - middle);
+
                 if (middle < 15)
                     return text.Substring(0, SnipLeng);
                 else
                     return text.Substring(middle - 15, SnipLeng);
             }
-
         }
         return " ";
     }
@@ -207,29 +258,7 @@ public static class Moogle
         }
         return GetNecessaryWords;
     }
-    public static double tf_idf(Dictionary<string, int> Query_docs_occur, string text, int words_in_text, int docs_in_corpus, string query)
-    {
-        double tf_idf = 0;
-        List<string> NotAllowedWords = GetNotAllowedWords(query);
-        List<string> NecessaryWords = GetNecessaryWords(query);
 
-        foreach (string word in NecessaryWords)
-        {
-            if (!text.Contains(word))
-                return tf_idf;
-        }
-        foreach (string word in NotAllowedWords)
-        {
-            if (text.Contains(word))
-                return tf_idf;
-        }
-        foreach (string word in Query_docs_occur.Keys)
-        {
-            tf_idf += Moogle.tf(text, word) * Moogle.idf(docs_in_corpus, Query_docs_occur[word]);
-        }
-
-        return tf_idf;
-    }
 
     //Cuenta las ocurrencias de cada palabra de una oracion en un texto y las suma
     public static int SentenceCountOc(string text, string sentence)

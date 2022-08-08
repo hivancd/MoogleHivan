@@ -3,14 +3,14 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System;
 
-int GetCLoseWords(string text, string query)
+double GetCLoseWords(string text, string query)
 {
     string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
     Regex obj = new Regex(pattern);
 
     List<int> distances = new List<int>();
     int distance = 0;
-    int ans =0;
+    double ans =0;
     string[] query_array = query.Split();
 
     for (int i = 0; i < query_array.Length - 2; i++)
@@ -26,8 +26,8 @@ int GetCLoseWords(string text, string query)
     }
     foreach(int e in distances)
         ans += e;
-        
-    return ans;
+    double answer = (1.0/ans);
+    return answer;
 }
 
 System.Console.WriteLine(GetCLoseWords("Esta tortuga es demasiado lenta", "tortuga ~ demasiado"));
