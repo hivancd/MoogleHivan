@@ -3,34 +3,144 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System;
 
-double GetCLoseWords(string text, string query)
-{
-    string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
-    Regex obj = new Regex(pattern);
+string content = @"E:\Prog\00moogle\moogle-main\Content";
+string[] files = Directory.GetFiles(content);
 
-    List<int> distances = new List<int>();
-    int distance = 0;
-    double ans =0;
+// string GetSuggestion(string[] Files, string[] query)
+// {
+//     List<string> AllTheWords = new List<string>();
+//     int max = 0;
+//     string MoreSimilarWord = query[0];
+
+//     foreach(string file in Files)// De este loop salgo con todas las palbaras en la lista
+//     {
+//         string[] CurrentFile = File.ReadAllText(file).Split();
+//         foreach(string word in CurrentFile)
+//         {
+//             if(word == query)
+//                 return query;
+//             if(!AllTheWords.Contains(word))
+//                 AllTheWords.Add(word);
+//         }
+//     }
+
+//     foreach(string word in AllTheWords)
+//     {
+//         foreach(string q in query)
+//         {
+//             if(IsSimilar(q,word)>max)
+//             {
+//                 max = IsSimilar(q,word);
+//                 MoreSimilarWord = word;
+//             }
+//         }
+//     }
+
+//     return MoreSimilarWord;
+// }
+
+// int IsSimilar(string query, string word)
+// {
+//     int ans = 0;
+
+//     foreach (char c in query.ToCharArray())
+//     {
+//         if (word.Contains(c))
+//         {
+//             ans += 1;
+//         }
+//     }
+
+//     return ans;
+// }
+string GetSuggestion(string[] Files, string query)
+{
+    List<string> AllTheWords = new List<string>();
+    int max = 0;
+    string MoreSimilarWord = query;
     string[] query_array = query.Split();
 
-    for (int i = 0; i < query_array.Length - 2; i++)
+    foreach (string file in Files)// De este loop salgo con todas las palbaras en la lista
     {
-        int LeftWordIndex = text.IndexOf(query_array[i]);
-        int RightWordIndex = text.IndexOf(query_array[i + 2]);
-
-        if (obj.IsMatch(query_array[i + 1]) && LeftWordIndex >= 0 && RightWordIndex >= 0)
+        string[] CurrentFile = File.ReadAllText(file).Split();
+        foreach (string word in CurrentFile)
         {
-            distance = (Math.Abs(LeftWordIndex - RightWordIndex));
-            distances.Add(distance);
+            if (word == query)
+                return query;
+            if (!AllTheWords.Contains(word))
+                AllTheWords.Add(word);
         }
     }
-    foreach(int e in distances)
-        ans += e;
-    double answer = (1.0/ans);
-    return answer;
+
+    foreach (string word in AllTheWords)
+    {
+        foreach (string q in query_array)
+        {
+            if (IsSimilar(q, word) > max)
+            {
+                max = IsSimilar(q, word);
+                MoreSimilarWord = word;
+            }
+        }
+    }
+
+    return MoreSimilarWord;
 }
 
-System.Console.WriteLine(GetCLoseWords("Esta tortuga es demasiado lenta", "tortuga ~ demasiado"));
+int IsSimilar(string query, string word)
+{
+    int ans = 0;
+    List<char> QueryList = query.ToList<char>();
+    List<char> WordList = word.ToList<char>();
+
+    foreach (char c in QueryList)
+    {
+        if (WordList.Contains(c))
+        {
+            WordList.Remove(c);
+            ans += 1;
+        }
+        else
+            ans -= 1;
+
+    }
+    return ans;
+}
+
+
+System.Console.WriteLine(IsSimilar("callabo", "poblacion"));
+// System.Console.WriteLine(GetCLoseWords("Esta tortuga es demasiado lenta", "tortuga ~ demasiado"));
+
+// GetSuggestion(files,"caballo");
+
+// double GetCLoseWords(string text, string query)
+// {
+//     string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
+//     Regex obj = new Regex(pattern);
+
+//     List<int> distances = new List<int>();
+//     int distance = 0;
+//     double ans =0;
+//     string[] query_array = query.Split();
+
+//     for (int i = 0; i < query_array.Length - 2; i++)
+//     {
+//         int LeftWordIndex = text.IndexOf(query_array[i]);
+//         int RightWordIndex = text.IndexOf(query_array[i + 2]);
+
+//         if (obj.IsMatch(query_array[i + 1]) && LeftWordIndex >= 0 && RightWordIndex >= 0)
+//         {
+//             distance = (Math.Abs(LeftWordIndex - RightWordIndex));
+//             distances.Add(distance);
+//         }
+//     }
+//     foreach(int e in distances)
+//         ans += e;
+//     double answer = (1.0/ans);
+//     return answer;
+// }
+
+
 // List<string> GetNecessaryWords(string query)
 // {
 //     string[] query_array = query.Split();
