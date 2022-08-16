@@ -1,45 +1,32 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace MoogleEngine;
 
 public static class Moogle
 {
-    // public static SearchItem Max(SearchItem[] array)//Este Metodo No es Necesario
-    // {
-    //     SearchItem Max = array[0];
-    //     for (int i = 0; i < array.Length; i++)
-    //     {
-    //         if (array[i].Score > Max.Score)
-    //             Max = array[i];
-    //     }
-    //     return Max;
-    // }
-
-    //Arreglar el snip
-    //No encuentra palabras acompannadas  de caracteres especiales(:,#,.,etc...)
-    // Hacer Sugerncias
     public static SearchResult Query(string query)//Este es el metodo PrincipalMAIN METHOD
     {
-        // Modifique este método para responder a la búsqueda
+        var timer = new Stopwatch();
+        timer.Start();
 
         string content = @"E:\Prog\00moogle\moogle-main\Content";
         string[] files = Directory.GetFiles(content);
-        string search_query = erase_whitespace(erase_stopwords(query));
-        string[] search_query_array = search_query.Split();
-        Dictionary<string, int> query_and_docs_occur = Query_and_docs_occur(search_query_array, files);
+
+        string search_query = QueryProcessing.ProcessQuery(query);
+
+        Dictionary<string, int> query_and_docs_occur = Query_and_docs_occur(search_query, files);
 
         SearchItem[] FilesOccur = new SearchItem[files.Length];
 
-        query = erase_whitespace(query);
-
         for (int i = 0; i < files.Length; i++)
         {
-            // CurrentFile.Length para el tf
+            // Method: Construir el SearchItem
             string CurrentFile = File.ReadAllText(files[i]);
             int FileSize = CurrentFile.Split().Length;
             string FileName = Path.GetFileNameWithoutExtension(files[i]);
-            string snippet = GetSnip(CurrentFile, query);
+            string snippet = GetSnip(CurrentFile, search_query);
             double Score = tf_idf(query_and_docs_occur, CurrentFile, FileSize, files.Length, search_query);
 
             FilesOccur[i] = new SearchItem(FileName, snippet, (float)Score);
@@ -47,84 +34,23 @@ public static class Moogle
             // idf(files.Length,docsOccur)
         }
 
-        FilesOccur = DescendingSort(FilesOccur);
-        int ScoreZero = FilesOccur.Length;
+        var items = ResultsPreparations.SortSearchItems(FilesOccur);
 
-        for (int i = 0; i < FilesOccur.Length; i++)
-        {
-            if (FilesOccur[i].Score == 0)
-            {
-                ScoreZero = i;
-                break;
-            }
-        }
+        foreach(SearchItem item in items)
+            System.Console.WriteLine(item);
 
-        SearchItem[] items = new SearchItem[ScoreZero];
-        for (int i = 0; i < items.Length; i++)
-        {
-            // items[i] = FilesOccur[0];
-            items[i] = FilesOccur[i];
-        }
-
-        // foreach(SearchItem item in items)
-        //     System.Console.WriteLine(item);
-
-
-        return new SearchResult(items, GetSuggestion(files,search_query));// GetSuggestion(files,search_query)
+        timer.Stop();
+        System.Console.WriteLine("Time taken: " + timer.Elapsed.ToString(@"m\:ss\.fff"));
+        timer.Restart();
+        
+        timer.Start();
+        var suggestion = "Suggestion.GetSuggestion(files,search_query)";
+        // var suggestion = Suggestion.GetSuggestion(files,search_query);
+        timer.Stop();
+        System.Console.WriteLine("Time taken in suggestion: " + timer.Elapsed.ToString(@"m\:ss\.fff"));
+        return new SearchResult(items, suggestion);// Suggestion.GetSuggestion(files,search_query)
     }
-    public static string GetSuggestion(string[] Files, string query)
-    {
-        List<string> AllTheWords = new List<string>();
-        int max = 0;
-        string MoreSimilarWord = query;
-        string[] query_array = query.Split();
-
-        foreach (string file in Files)// De este loop salgo con todas las palbaras en la lista
-        {
-            string[] CurrentFile = File.ReadAllText(file).Split();
-            foreach (string word in CurrentFile)
-            {
-                if (word == query)
-                    return query;
-                if (!AllTheWords.Contains(word))
-                    AllTheWords.Add(word);
-            }
-        }
-
-        foreach (string word in AllTheWords)
-        {
-            foreach (string q in query_array)
-            {
-                if (IsSimilar(q, word) > max)
-                {
-                    max = IsSimilar(q, word);
-                    MoreSimilarWord = word;
-                }
-            }
-        }
-
-        return MoreSimilarWord;
-    }
-
-    public static int IsSimilar(string query, string word)
-    {
-        int ans = 0;
-        List<char> QueryList = query.ToList<char>();
-        List<char> WordList = word.ToList<char>();
-
-        foreach (char c in QueryList)
-        {
-            if (WordList.Contains(c))
-            {
-                WordList.Remove(c);
-                ans += 1;
-            }
-            else
-                ans -= 1;
-
-        }
-        return ans;
-    }
+    
 
 
     public static double tf_idf(Dictionary<string, int> Query_docs_occur, string text, int words_in_text, int docs_in_corpus, string query)
@@ -213,38 +139,7 @@ public static class Moogle
         }
         return " ";
     }
-    public static string erase_stopwords(string sentence)//This method erases stopwords from the queryQUERY PROCESSING
-    {
-        string[] array_sentence = sentence.Split();
-        string ans = "";
-
-        for (int i = 0; i < array_sentence.Length; i++)
-        {
-            if (!Is_stop_word(array_sentence[i]))
-                ans = ans + array_sentence[i] + " ";
-        }
-        return ans;
-    }
-    public static string erase_whitespace(string sentence)//this method erases whitespace from the queryQUERY PROCESSING
-    {
-        string ans = "";
-
-        for (int i = 0; i < sentence.Length; i++)
-        {
-            if (!(sentence[i].ToString() == " " && ((i + 1 == sentence.Length) || (sentence[i + 1].ToString() == " "))))
-                ans = ans + sentence[i];
-        }
-        return ans;
-    }
-    public static bool Is_stop_word(string word)//this method dtermines if a word is a stopwordQUERY PROCESSING
-    {
-        string stop_words_archive = @"E:\Prog\00moogle\moogle-main\stopwords.txt";
-        string[] stopwords = File.ReadAllLines(stop_words_archive);
-
-        if (stopwords.Contains(word.ToLower()))
-            return true;
-        return false;
-    }
+   
     //Cuenta las ocurrencias de una palabra en un texto
     public static int RawCount(string text, string subs)
     {
@@ -278,8 +173,9 @@ public static class Moogle
     }
 
     // This method returns a dict with each word in the query and the amount of files in wich it appears
-    public static Dictionary<string, int> Query_and_docs_occur(string[] search_query_array, string[] files)
+    public static Dictionary<string, int> Query_and_docs_occur(string search_query, string[] files)
     {
+        string[] search_query_array = search_query.Split();
         Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);
 
         foreach (string word in search_query_array)
@@ -330,22 +226,7 @@ public static class Moogle
         return totalOccur;
     }
     //Ordena Un Array De SearchItems de mayor a menor segun el Score RESULTS PROCESSING
-    public static SearchItem[] DescendingSort(SearchItem[] array)
-    {
-        for (int i = 0; i < array.Length; i++)
-        {
-            for (int j = i + 1; j < array.Length; j++)
-            {
-                if (array[j].Score > array[i].Score)
-                {
-                    SearchItem max = array[j];
-                    array[j] = array[i];
-                    array[i] = max;
-                }
-            }
-        }
-        return array;
-    }
+    
 
 }
 // SearchItem[] items =
