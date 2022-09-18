@@ -16,20 +16,21 @@ public static class Moogle
 
         string search_query = QueryProcessing.ProcessQuery(query);
 
-        Dictionary<string, int> query_and_docs_occur = Query_and_docs_occur(search_query, files);
         var Dictionarys = WordDictionarys.GetWordDictionarys(files);
+        Dictionary<string, int> query_and_docs_occur = Query_and_docs_occur(search_query, Dictionarys);
 
         SearchItem[] FilesOccur = new SearchItem[files.Length];
 
         for (int i = 0; i < files.Length; i++)
         {
             // Method: Construir el SearchItem
+            var text = Dictionarys[i];
             string CurrentFile = File.ReadAllText(files[i]);
-            int FileSize = CurrentFile.Split().Length;
+            int FileSize = text.Values.Sum();
             string FileName = Path.GetFileNameWithoutExtension(files[i]);
             string snippet = GetSnip(CurrentFile, search_query);
-            double Score = tf_idf(query_and_docs_occur, CurrentFile, FileSize, files.Length, search_query);
-
+            double Score = tf_idf(query_and_docs_occur, text, FileSize, files.Length, search_query) * (1 + 1 / GetCLoseWords(CurrentFile, query, text));
+            System.Console.WriteLine((1 + 1 / GetCLoseWords(CurrentFile, query, text)));
             FilesOccur[i] = new SearchItem(FileName, snippet, (float)Score);
             // tf(count Occur,CurrentFile)
             // idf(files.Length,docsOccur)
@@ -37,13 +38,13 @@ public static class Moogle
 
         var items = ResultsPreparations.SortSearchItems(FilesOccur);
 
-        foreach(SearchItem item in items)
+        foreach (SearchItem item in items)
             System.Console.WriteLine(item);
 
         timer.Stop();
         System.Console.WriteLine("Time taken: " + timer.Elapsed.ToString(@"m\:ss\.fff"));
         timer.Restart();
-        
+
         timer.Start();
         var suggestion = "Suggestion.GetSuggestion(files,search_query)";
         // var suggestion = Suggestion.GetSuggestion(files,search_query);
@@ -51,10 +52,10 @@ public static class Moogle
         System.Console.WriteLine("Time taken in suggestion: " + timer.Elapsed.ToString(@"m\:ss\.fff"));
         return new SearchResult(items, suggestion);// Suggestion.GetSuggestion(files,search_query)
     }
-    
 
 
-    public static double tf_idf(Dictionary<string, int> Query_docs_occur, string text, int words_in_text, int docs_in_corpus, string query)
+
+    public static double tf_idf(Dictionary<string, int> Query_docs_occur, Dictionary<string, int> text, int words_in_text, int docs_in_corpus, string query)
     {
         double tf_idf = 0;
         List<string> NotAllowedWords = GetNotAllowedWords(query);
@@ -62,21 +63,37 @@ public static class Moogle
 
         foreach (string word in NecessaryWords)
         {
-            if (!text.Contains(word))
+            if (!text.Keys.Contains(word))
                 return tf_idf;
         }
         foreach (string word in NotAllowedWords)
         {
-            if (text.Contains(word))
+            if (text.Keys.Contains(word))
                 return tf_idf;
         }
         foreach (string word in Query_docs_occur.Keys)
         {
-            tf_idf += Moogle.tf(text, word) * Moogle.idf(docs_in_corpus, Query_docs_occur[word]);// + 1/GetCLoseWords(text, query);
+            tf_idf += Moogle.tf(word, text) * Moogle.idf(docs_in_corpus, Query_docs_occur[word]);
         }
 
         return tf_idf;
     }
+    public static double tf(string subs, Dictionary<string, int> Dictionary)
+    {
+        int a = 0;
+        if (Dictionary.ContainsKey(subs))
+            a = Dictionary[subs];
+        return ((double)a / (double)Dictionary.Count);
+    }
+
+
+    public static double idf(int docs_in_corpus, int docs_with_occur)
+    {
+        if (docs_with_occur == 0 || docs_in_corpus == docs_with_occur)
+            return 0;
+        return Math.Log(10, (double)docs_in_corpus / (double)docs_with_occur);
+    }
+
     public static List<string> GetNotAllowedWords(string query)
     {
         string[] query_array = query.Split();
@@ -90,32 +107,32 @@ public static class Moogle
         }
         return GetNotAllowedWords;
     }
-    static public int GetCLoseWords(string text, string query)
-    {
-        string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
-        Regex obj = new Regex(pattern);
+    // static public int GetCLoseWords(string text, string query)
+    // {
+    //     string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
+    //     Regex obj = new Regex(pattern);
 
-        List<int> distances = new List<int>();
-        int distance = 0;
-        int ans = 0;
-        string[] query_array = query.Split();
+    //     List<int> distances = new List<int>();
+    //     int distance = 0;
+    //     int ans = 0;
+    //     string[] query_array = query.Split();
 
-        for (int i = 0; i < query_array.Length - 2; i++)
-        {
-            int LeftWordIndex = text.IndexOf(query_array[i]);
-            int RightWordIndex = text.IndexOf(query_array[i + 2]);
+    //     for (int i = 0; i < query_array.Length - 2; i++)
+    //     {
+    //         int LeftWordIndex = text.IndexOf(query_array[i]);
+    //         int RightWordIndex = text.IndexOf(query_array[i + 2]);
 
-            if (obj.IsMatch(query_array[i + 1]) && LeftWordIndex >= 0 && RightWordIndex >= 0)
-            {
-                distance = (Math.Abs(LeftWordIndex - RightWordIndex));
-                distances.Add(distance);
-            }
-        }
-        foreach (int e in distances)
-            ans += e;
+    //         if (obj.IsMatch(query_array[i + 1]) && LeftWordIndex >= 0 && RightWordIndex >= 0)
+    //         {
+    //             distance = (Math.Abs(LeftWordIndex - RightWordIndex));
+    //             distances.Add(distance);
+    //         }
+    //     }
+    //     foreach (int e in distances)
+    //         ans += e;
 
-        return ans;
-    }
+    //     return ans;
+    // }
     public static string GetSnip(string text, string query)//Este metodo coge el snip (Es mejorable)ARREGLAR
     {
         string[] query_array = query.Split();
@@ -140,41 +157,90 @@ public static class Moogle
         }
         return " ";
     }
-   
-    //Cuenta las ocurrencias de una palabra en un texto
-    public static int RawCount(string text, string subs)
+
+
+    public static double GetCLoseWords(string text, string query, Dictionary<string, int> Dict)
     {
-        if (subs == "")
-            return 0;//No pincha porque el substring es ""
-        int occurrences = 0;
-        int start = text.IndexOf(subs);
+        string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
+        Regex obj = new Regex(pattern);
 
-        text = text.ToLower();
-        subs = subs.ToLower();
+        string[] query_array = query.Split();
 
-        if (start != -1)
+        if (query_array.Length >= 3)
         {
-            occurrences++;
-            occurrences = occurrences + RawCount(text.Substring(start + subs.Length), subs);
+            for (int i = 0; i < query_array.Length - 2; i++)
+            {
+                string LeftWord = query_array[i];
+                string RightWord = query_array[i + 2];
+
+                if (obj.IsMatch(query_array[i + 1]) && Dict.ContainsKey(LeftWord) && Dict.ContainsKey(RightWord))
+                {
+                    List<int> distances = new List<int>();
+                    var LeftWordIndexes = GetIndexes(text, query_array[i], Dict[query_array[i]]);
+                    var RightWordIndexes = GetIndexes(text, query_array[i + 2], Dict[query_array[i + 2]]);
+
+                    foreach (int indexL in LeftWordIndexes)
+                    {
+                        foreach (int indexR in RightWordIndexes)
+                        {
+                            int distance = (Math.Abs(indexL - indexR));
+                            distances.Add(distance);
+                        }
+                    }
+                    int ans = distances[0];
+                    foreach (int dist in distances)
+                    {
+                        if (dist < ans)
+                            ans = dist;
+                    }
+                    return (double)ans;
+                }
+            }
         }
-        return occurrences;
+        return 1;
     }
 
-    public static double tf(string text, string subs)
+    public static int[] GetIndexes(string text, string word, int cant)
     {
-        string[] text_array = text.Split();
-        return ((double)RawCount(text, subs) / (double)(text_array.Length));
+        int[] AllIndexes = new int[cant];
+        int wordIndex = text.IndexOf(word);
+        int Mark = 0;
+
+        for (int i = 0; i < cant; i++)
+        {
+            AllIndexes[i] = text.Substring(Mark + word.Length).IndexOf(word);
+            Mark = AllIndexes[i];
+        }
+        return AllIndexes;
     }
 
-    public static double idf(int docs_in_corpus, int docs_with_occur)
-    {
-        if (docs_with_occur == 0 || docs_in_corpus == docs_with_occur)
-            return 0;
-        return Math.Log(10, (double)docs_in_corpus / (double)docs_with_occur);
-    }
 
     // This method returns a dict with each word in the query and the amount of files in wich it appears
-    public static Dictionary<string, int> Query_and_docs_occur(string search_query, string[] files)
+    // public static Dictionary<string, int> Query_and_docs_occur(string search_query, string[] files)
+    // {
+    //     string[] search_query_array = search_query.Split();
+    //     Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);
+
+    //     foreach (string word in search_query_array)
+    //         dict.Add(word, 0);
+
+    //     for (int i = 0; i < files.Length; i++)
+    //     {
+    //         string CurrentFile = File.ReadAllText(files[i]);
+
+    //         foreach (string word in search_query_array)
+    //         {
+    //             if (word == "" || word == " ")
+    //                 continue;
+    //             else if (CurrentFile.Contains(word))
+    //                 dict[word] += 1;
+    //         }
+    //     }
+    //     return dict;
+    // }
+
+
+    public static Dictionary<string, int> Query_and_docs_occur(string search_query, Dictionary<string, int>[] Dictionarys)
     {
         string[] search_query_array = search_query.Split();
         Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);
@@ -182,21 +248,18 @@ public static class Moogle
         foreach (string word in search_query_array)
             dict.Add(word, 0);
 
-        for (int i = 0; i < files.Length; i++)
+        for (int i = 0; i < Dictionarys.Length; i++)
         {
-            string CurrentFile = File.ReadAllText(files[i]);
-
             foreach (string word in search_query_array)
             {
                 if (word == "" || word == " ")
                     continue;
-                else if (CurrentFile.Contains(word))
+                else if (Dictionarys[i].Keys.Contains(word))
                     dict[word] += 1;
             }
         }
         return dict;
     }
-
     public static List<string> GetNecessaryWords(string query)
     {
         string[] query_array = query.Split();
@@ -212,22 +275,22 @@ public static class Moogle
     }
 
 
-    //Cuenta las ocurrencias de cada palabra de una oracion en un texto y las suma
-    public static int SentenceCountOc(string text, string sentence)
-    {
-        string[] words = sentence.Split();
-        int totalOccur = 0;
+    // //Cuenta las ocurrencias de cada palabra de una oracion en un texto y las suma
+    // public static int SentenceCountOc(string text, string sentence)
+    // {
+    //     string[] words = sentence.Split();
+    //     int totalOccur = 0;
 
-        foreach (string word in words)
-        {
-            // TFidf = tf(text, word) * idf(word)
-            totalOccur += Moogle.RawCount(text, word);
-        }
+    //     foreach (string word in words)
+    //     {
+    //         // TFidf = tf(text, word) * idf(word)
+    //         totalOccur += Moogle.RawCount(text, word);
+    //     }
 
-        return totalOccur;
-    }
+    //     return totalOccur;
+    // }
     //Ordena Un Array De SearchItems de mayor a menor segun el Score RESULTS PROCESSING
-    
+
 
 }
 // SearchItem[] items =
@@ -244,6 +307,24 @@ public static class Moogle
 // items = new SearchItem[3];
 
 
+// //Cuenta las ocurrencias de una palabra en un texto
+// public static int RawCount(string text, string subs)
+// {
+//     if (subs == "")
+//         return 0;//No pincha porque el substring es ""
+//     int occurrences = 0;
+//     int start = text.IndexOf(subs);
+
+//     text = text.ToLower();
+//     subs = subs.ToLower();
+
+//     if (start != -1)
+//     {
+//         occurrences++;
+//         occurrences = occurrences + RawCount(text.Substring(start + subs.Length), subs);
+//     }
+//     return occurrences;
+// }
 
 // 0.01905176112949586
 // 0.004127538426740262

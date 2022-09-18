@@ -113,41 +113,58 @@ string[] files = Directory.GetFiles(content);
 
 // GetSuggestion(files,"caballo");
 
-// double GetCLoseWords(string text, string query)
+// double GetCLoseWords(string text, string query, Dictionary<string, int> Dict)
 // {
 //     string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
 //     Regex obj = new Regex(pattern);
 
 //     string[] query_array = query.Split();
 
-//     List<int> LeftWordIndexes = new List<int>();
-//     List<int> RightWordIndexes = new List<int>();
-
-//      for (int i = 0; i < query_array.Length - 2; i++)
+//     for (int i = 0; i < query_array.Length - 2; i++)
 //     {
 //         string LeftWord = query_array[i];
 //         string RightWord = query_array[i + 2];
-//         int LWIndex = text.IndexOf(LeftWord);
-//         int RWIndex = text.IndexOf(RightWord);
 
-//         if (obj.IsMatch(query_array[i + 1]) && LWIndex >= 0 && RWIndex >= 0)
+//         if (obj.IsMatch(query_array[i + 1]) && Dict.ContainsKey(LeftWord) && Dict.ContainsKey(LeftWord))
 //         {
-            
+//             List<int> distances = new List<int>();
+//             var LeftWordIndexes = GetIndexes(text, query_array[i], Dict[query_array[i]]);
+//             var RightWordIndexes = GetIndexes(text, query_array[i + 2], Dict[query_array[i + 2]]);
+
+//             foreach (int indexL in LeftWordIndexes)
+//             {
+//                 foreach (int indexR in RightWordIndexes)
+//                 {
+//                     distance = (Math.Abs(LeftWordIndex - RightWordIndex));
+//                     distances.Add(distance);
+//                 }
+//             }
+//             int ans = distances[0];
+//             foreach (int dist in distances)
+//             {
+//                 if (dist < ans)
+//                     ans = dist;
+//             }
+//             return (double)ans;
 //         }
 //     }
 // }
 
-// List<int> GetIndexes(string text, string word)
+// int[] GetIndexes(string text, string word, int cant)
 // {
-//     List<int> AllIndexes = new List<int>();
+//     int[] AllIndexes = new int[cant];
 //     int wordIndex = text.IndexOf(word);
+//     int Mark = 0;
 
-//     if(wordIndex == -1)
-//         return AllIndexes;
-//     else
-//         return AllIndexes.AddRange(GetIndexes(text.Substring(wordIndex + word.Length)));
+//     for (int i = 0; i < cant; i++)
+//     {
+//         AllIndexes[i] = text.Substring(Mark + word.Length).IndexOf(word);
+//         Mark = AllIndexes[i];
+//     }
+//     return AllIndexes;
 // }
 
+//  AllIndexes.AddRange(GetIndexes(text.Substring(wordIndex + word.Length)))
 // string text = "jsdfjeqjfdejsadjfeeqffde";
 
 // foreach(int index in GetIndexes(text,"eq"))

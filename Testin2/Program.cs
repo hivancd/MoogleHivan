@@ -44,14 +44,14 @@ void WriteDictInSearchData(Dictionary<string, int> Dict)
 {
     foreach (string s in Dict.Keys)
     {
-        System.Console.Write("{"+s + ", " + Dict[s] + "} ");
+        System.Console.Write("{" + s + ", " + Dict[s] + "} ");
     }
     System.Console.WriteLine();
 }
 
 var Dictionarys = GetWordDictionarys(files);
 
-for(int i = 0;i<files.Length;i++)
+for (int i = 0; i < files.Length; i++)
 {
     string Filename = Path.GetFileNameWithoutExtension(files[i]);
     System.Console.WriteLine(Filename);
@@ -80,3 +80,25 @@ for(int i = 0;i<files.Length;i++)
 // File.WriteAllText(@"E:\Prog\moogle\moogle-main\SearchDictionarys.txt",word);
 // File.AppendAllText(@"E:\Prog\moogle\moogle-main\SearchDictionarys.txt", "word");
 
+Dictionary<string, int> Query_and_docs_occur(string search_query, Dictionary<string, int>[] Dictionarys, string[] files)
+{
+    string[] search_query_array = search_query.Split();
+    Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);
+
+    foreach (string word in search_query_array)
+        dict.Add(word, 0);
+
+    for (int i = 0; i < files.Length; i++)
+    {
+        string CurrentFile = files[i];
+
+        foreach (string word in search_query_array)
+        {
+            if (word == "" || word == " ")
+                continue;
+            else if (Dictionarys[i].Contains(word))
+                dict[word] += 1;
+        }
+    }
+    return dict;
+}
