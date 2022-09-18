@@ -31,7 +31,7 @@ public class QueryProcessing
     }
     public static bool Is_stop_word(string word)//this method dtermines if a word is a stopwordQUERY PROCESSING
     {
-        string stop_words_archive = @"E:\Prog\00moogle\moogle-main\stopwords.txt";
+        string stop_words_archive = @"E:\Prog\moogle\moogle-main\stopwords.txt";
         string[] stopwords = File.ReadAllLines(stop_words_archive);
 
         if (stopwords.Contains(word.ToLower()))

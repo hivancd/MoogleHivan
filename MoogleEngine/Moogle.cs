@@ -11,12 +11,13 @@ public static class Moogle
         var timer = new Stopwatch();
         timer.Start();
 
-        string content = @"E:\Prog\00moogle\moogle-main\Content";
+        string content = @"E:\Prog\moogle\moogle-main\Content";
         string[] files = Directory.GetFiles(content);
 
         string search_query = QueryProcessing.ProcessQuery(query);
 
         Dictionary<string, int> query_and_docs_occur = Query_and_docs_occur(search_query, files);
+        var Dictionarys = WordDictionarys.GetWordDictionarys(files);
 
         SearchItem[] FilesOccur = new SearchItem[files.Length];
 

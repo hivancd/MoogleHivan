@@ -53,66 +53,105 @@ string[] files = Directory.GetFiles(content);
 
 //     return ans;
 // }
-string GetSuggestion(string[] Files, string query)
-{
-    List<string> AllTheWords = new List<string>();
-    int max = 0;
-    string MoreSimilarWord = query;
-    string[] query_array = query.Split();
+// string GetSuggestion(string[] Files, string query)
+// {
+//     List<string> AllTheWords = new List<string>();
+//     int max = 0;
+//     string MoreSimilarWord = query;
+//     string[] query_array = query.Split();
 
-    foreach (string file in Files)// De este loop salgo con todas las palbaras en la lista
-    {
-        string[] CurrentFile = File.ReadAllText(file).Split();
-        foreach (string word in CurrentFile)
-        {
-            if (word == query)
-                return query;
-            if (!AllTheWords.Contains(word))
-                AllTheWords.Add(word);
-        }
-    }
+//     foreach (string file in Files)// De este loop salgo con todas las palbaras en la lista
+//     {
+//         string[] CurrentFile = File.ReadAllText(file).Split();
+//         foreach (string word in CurrentFile)
+//         {
+//             if (word == query)
+//                 return query;
+//             if (!AllTheWords.Contains(word))
+//                 AllTheWords.Add(word);
+//         }
+//     }
 
-    foreach (string word in AllTheWords)
-    {
-        foreach (string q in query_array)
-        {
-            if (IsSimilar(q, word) > max)
-            {
-                max = IsSimilar(q, word);
-                MoreSimilarWord = word;
-            }
-        }
-    }
+//     foreach (string word in AllTheWords)
+//     {
+//         foreach (string q in query_array)
+//         {
+//             if (IsSimilar(q, word) > max)
+//             {
+//                 max = IsSimilar(q, word);
+//                 MoreSimilarWord = word;
+//             }
+//         }
+//     }
 
-    return MoreSimilarWord;
-}
+//     return MoreSimilarWord;
+// }
 
-int IsSimilar(string query, string word)
-{
-    int ans = 0;
-    List<char> QueryList = query.ToList<char>();
-    List<char> WordList = word.ToList<char>();
+// int IsSimilar(string query, string word)
+// {
+//     int ans = 0;
+//     List<char> QueryList = query.ToList<char>();
+//     List<char> WordList = word.ToList<char>();
 
-    foreach (char c in QueryList)
-    {
-        if (WordList.Contains(c))
-        {
-            WordList.Remove(c);
-            ans += 1;
-        }
-        else
-            ans -= 1;
+//     foreach (char c in QueryList)
+//     {
+//         if (WordList.Contains(c))
+//         {
+//             WordList.Remove(c);
+//             ans += 1;
+//         }
+//         else
+//             ans -= 1;
 
-    }
-    return ans;
-}
+//     }
+//     return ans;
+// }
 
 
-System.Console.WriteLine(IsSimilar("callabo", "poblacion"));
+// System.Console.WriteLine(IsSimilar("callabo", "poblacion"));
 // System.Console.WriteLine(GetCLoseWords("Esta tortuga es demasiado lenta", "tortuga ~ demasiado"));
 
 // GetSuggestion(files,"caballo");
 
+// double GetCLoseWords(string text, string query)
+// {
+//     string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
+//     Regex obj = new Regex(pattern);
+
+//     string[] query_array = query.Split();
+
+//     List<int> LeftWordIndexes = new List<int>();
+//     List<int> RightWordIndexes = new List<int>();
+
+//      for (int i = 0; i < query_array.Length - 2; i++)
+//     {
+//         string LeftWord = query_array[i];
+//         string RightWord = query_array[i + 2];
+//         int LWIndex = text.IndexOf(LeftWord);
+//         int RWIndex = text.IndexOf(RightWord);
+
+//         if (obj.IsMatch(query_array[i + 1]) && LWIndex >= 0 && RWIndex >= 0)
+//         {
+            
+//         }
+//     }
+// }
+
+// List<int> GetIndexes(string text, string word)
+// {
+//     List<int> AllIndexes = new List<int>();
+//     int wordIndex = text.IndexOf(word);
+
+//     if(wordIndex == -1)
+//         return AllIndexes;
+//     else
+//         return AllIndexes.AddRange(GetIndexes(text.Substring(wordIndex + word.Length)));
+// }
+
+// string text = "jsdfjeqjfdejsadjfeeqffde";
+
+// foreach(int index in GetIndexes(text,"eq"))
+//     System.Console.WriteLine(index);
 // double GetCLoseWords(string text, string query)
 // {
 //     string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
