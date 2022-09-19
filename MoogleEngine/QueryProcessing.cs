@@ -1,10 +1,12 @@
+using System.Text.RegularExpressions;
+
 namespace MoogleEngine;
 
 public class QueryProcessing
 {
     public static string ProcessQuery(string query)
     {
-        return erase_whitespace(erase_stopwords(query));
+        return erase_asterisc(erase_whitespace(erase_stopwords(query)));
     }
     public static string erase_stopwords(string sentence)//This method erases stopwords from the queryQUERY PROCESSING
     {
@@ -37,5 +39,16 @@ public class QueryProcessing
         if (stopwords.Contains(word.ToLower()))
             return true;
         return false;
+    }
+
+    public static string erase_asterisc(string sentence)
+    {
+        var ans = "";
+        for(int i = 0; i<sentence.Length; i++)
+        {
+            if(!(sentence[i].ToString() == "*"))
+                ans += sentence[i];
+        }
+        return ans;
     }
 }

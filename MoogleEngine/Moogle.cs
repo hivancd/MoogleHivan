@@ -14,6 +14,7 @@ public static class Moogle
         string content = @"E:\Prog\moogle\moogle-main\Content";
         string[] files = Directory.GetFiles(content);
 
+        var Importance = GetImportance(query);
         string search_query = QueryProcessing.ProcessQuery(query);
 
         var Dictionarys = WordDictionarys.GetWordDictionarys(files);
@@ -29,8 +30,9 @@ public static class Moogle
             int FileSize = text.Values.Sum();
             string FileName = Path.GetFileNameWithoutExtension(files[i]);
             string snippet = GetSnip(CurrentFile, search_query);
-            double Score = tf_idf(query_and_docs_occur, text, FileSize, files.Length, search_query) * (1 + 1 / GetCLoseWords(CurrentFile, query, text));
-            System.Console.WriteLine((1 + 1 / GetCLoseWords(CurrentFile, query, text)));
+
+            double Score = tf_idf(query_and_docs_occur, text,Importance, FileSize, files.Length, search_query) * (1 + 1 / GetCLoseWords(CurrentFile, query, text));
+
             FilesOccur[i] = new SearchItem(FileName, snippet, (float)Score);
             // tf(count Occur,CurrentFile)
             // idf(files.Length,docsOccur)
@@ -38,8 +40,8 @@ public static class Moogle
 
         var items = ResultsPreparations.SortSearchItems(FilesOccur);
 
-        foreach (SearchItem item in items)
-            System.Console.WriteLine(item);
+        // foreach (SearchItem item in items)
+        //     System.Console.WriteLine(item);
 
         timer.Stop();
         System.Console.WriteLine("Time taken: " + timer.Elapsed.ToString(@"m\:ss\.fff"));
@@ -55,9 +57,10 @@ public static class Moogle
 
 
 
-    public static double tf_idf(Dictionary<string, int> Query_docs_occur, Dictionary<string, int> text, int words_in_text, int docs_in_corpus, string query)
+    public static double tf_idf(Dictionary<string, int> Query_docs_occur, Dictionary<string, int> text,Dictionary<string, int> Importance, int words_in_text, int docs_in_corpus, string query)
     {
         double tf_idf = 0;
+        var imp = 1;
         List<string> NotAllowedWords = GetNotAllowedWords(query);
         List<string> NecessaryWords = GetNecessaryWords(query);
 
@@ -73,7 +76,13 @@ public static class Moogle
         }
         foreach (string word in Query_docs_occur.Keys)
         {
-            tf_idf += Moogle.tf(word, text) * Moogle.idf(docs_in_corpus, Query_docs_occur[word]);
+            if(Importance.ContainsKey(word))
+                imp += Importance[word];
+            System.Console.WriteLine(word);
+            System.Console.WriteLine(Moogle.tf(word, text) * Moogle.idf(docs_in_corpus, Query_docs_occur[word])*imp);
+            // System.Console.WriteLine(imp);
+            tf_idf += Moogle.tf(word, text) * Moogle.idf(docs_in_corpus, Query_docs_occur[word])*imp;
+            imp = 1;
         }
 
         return tf_idf;
@@ -278,6 +287,31 @@ public static class Moogle
                 GetNecessaryWords.Add(word.Substring(1));
         }
         return GetNecessaryWords;
+    }
+
+    public static Dictionary<string, int> GetImportance(string query)
+    {
+        string pattern = @"^\*";
+        Regex obj = new Regex(pattern);
+
+        Dictionary<string,int> Importance = new Dictionary<string, int>();
+        string[] query_array = query.Split();
+
+        foreach(string word in query_array)
+        {
+            if(obj.IsMatch(word))
+            {
+                int asterisc = 0;
+                int index = 0;
+                while(word[index].ToString() == "*")
+                {
+                    index += 1;
+                    asterisc += 1;
+                }
+                Importance[word.Substring(index)] = asterisc;
+            }
+        }
+        return Importance;
     }
 
 
