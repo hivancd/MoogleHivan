@@ -164,6 +164,8 @@ public static class Moogle
         string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
         Regex obj = new Regex(pattern);
 
+        List<int> distances = new List<int>();
+
         string[] query_array = query.Split();
 
         if (query_array.Length >= 3)
@@ -175,7 +177,6 @@ public static class Moogle
 
                 if (obj.IsMatch(query_array[i + 1]) && Dict.ContainsKey(LeftWord) && Dict.ContainsKey(RightWord))
                 {
-                    List<int> distances = new List<int>();
                     var LeftWordIndexes = GetIndexes(text, query_array[i], Dict[query_array[i]]);
                     var RightWordIndexes = GetIndexes(text, query_array[i + 2], Dict[query_array[i + 2]]);
 
@@ -187,14 +188,17 @@ public static class Moogle
                             distances.Add(distance);
                         }
                     }
-                    int ans = distances[0];
-                    foreach (int dist in distances)
-                    {
-                        if (dist < ans)
-                            ans = dist;
-                    }
-                    return (double)ans;
                 }
+            }
+            if (distances.Count >= 1)
+            {
+                int ans = distances[0];
+                foreach (int dist in distances)
+                {
+                    if (dist < ans)
+                        ans = dist;
+                }
+                return ans;
             }
         }
         return 1;
@@ -246,8 +250,10 @@ public static class Moogle
         Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);
 
         foreach (string word in search_query_array)
-            dict.Add(word, 0);
-
+        {
+            if (!dict.ContainsKey(word))
+                dict.Add(word, 0);
+        }
         for (int i = 0; i < Dictionarys.Length; i++)
         {
             foreach (string word in search_query_array)
