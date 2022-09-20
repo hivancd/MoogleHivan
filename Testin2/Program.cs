@@ -3,44 +3,139 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System;
 
-// /*
-// What tf-idf needs:
-// idf:
-// -In how many files the word appears
-// -How many files are there
-// tf:
-// - How many words in text
-// - How many times the word appears in the text
-// */
 
-// string content = @"E:\Prog\moogle\moogle-main\Content";
-// string[] files = Directory.GetFiles(content);
 
-// Dictionary<string, int>[] GetWordDictionarys(string[] files)
-// {
-//     int FilesLength = files.Length;
-//     Dictionary<string, int>[] Dictionarys = new Dictionary<string, int>[FilesLength];
+Dictionary<string, int>[] GetWordDictionarys(string[] files)
+{
+    int FilesLength = files.Length;
+    Dictionary<string, int>[] Dictionarys = new Dictionary<string, int>[FilesLength];
 
-//     for (int i = 0; i < FilesLength; i++)
-//     {
-//         string[] CurrentFile = File.ReadAllText(files[i]).Split();
-//         Dictionary<string, int> CurrentDict = new Dictionary<string, int>();
+    for (int i = 0; i < FilesLength; i++)
+    {
+        string[] CurrentFile = File.ReadAllText(files[i]).Split();
+        Dictionary<string, int> CurrentDict = new Dictionary<string, int>();
 
-//         foreach (string word in CurrentFile)
-//         {
-//             if (CurrentDict.Keys.Contains(word))
-//                 CurrentDict[word] += 1;
-//             else
-//                 CurrentDict[word] = 1;
-//         }
-//         Dictionarys[i] = CurrentDict;
-//     }
-//     return Dictionarys;
-// }
+        foreach (string word in CurrentFile)
+        {
+            if (CurrentDict.Keys.Contains(word))
+                CurrentDict[word] += 1;
+            else
+                CurrentDict[word] = 1;
+        }
+        Dictionarys[i] = CurrentDict;
+    }
+    return Dictionarys;
+}
 
 
 
-// void WriteDictInSearchData(Dictionary<string, int> Dict)
+
+
+int[,] GetMatrix(string[] files, Dictionary<string, int>[] Dictionarys, List<string> AllTheWords)
+{
+    int[,] Matrix = new int[files.Length, AllTheWords.Count];
+
+    for (int x = 0; x < files.Length; x++)
+    {
+        foreach (string s in Dictionarys[x].Keys)
+        {
+            int y = AllTheWords.IndexOf(s);
+            Matrix[x, y] = Dictionarys[x][s];
+        }
+    }
+    return Matrix;
+}
+
+void PrintMatrix(int[,] Matrix)
+{
+    for (int x = 0; x < Matrix.GetLength(0); x++)
+    {
+        for (int y = 0; y < Matrix.GetLength(1); y++)
+            System.Console.Write(Matrix[x, y] + "  ");
+        System.Console.WriteLine();
+    }
+}
+
+int[] Sentence2Vec(string sentence, List<string> AllTheWords)
+{
+    string[] sentenceArray = sentence.Split();
+    int[] vec = new int[AllTheWords.Count];
+
+    for (int i = 0; i < sentenceArray.Length; i++)
+    {
+        if (AllTheWords.Contains(sentenceArray[i]))
+            vec[AllTheWords.IndexOf(sentenceArray[i])] = 1;
+    }
+
+    return vec;
+}
+
+
+string content = @"E:\Prog\moogle\moogle-main\Content";
+string[] files = Directory.GetFiles(content);
+
+
+double[,] tf_idf(int[,] Matrix)
+{
+    double[,] tf_idf = new double[Matrix.GetLength(0), Matrix.GetLength(1)];
+
+    for (int x = 0; x < tf.GetLength(0); x++)
+    {
+        for (int y = 0; y < tf.GetLength(1); y++)
+        {
+            tf_idf[x, y] = Matrix[x, y] / TotalWords[x] * Math.Log(Matrix.GetLength(0) / GetNumberOfDocsEachWordAppears[y]);
+        }
+    }
+    return tf_idf;
+
+    int[] GetTotalWords(int[,] Matrix)
+    {
+        int[] TotalWords = new int[Matrix.GetLength(0)];
+
+        for (int x = 0; x < Matrix.GetLength(0); x++)
+        {
+            int sum = 0;
+            for (int y = 0; y < Matrix.GetLength(1); y++)
+            {
+                sum += Matrix[x, y];
+            }
+            TotalWords[x] = sum;
+        }
+        return TotalWords;
+    }
+
+    List<string> GetAllTheWords(Dictionary<string, int>[] Dictionarys)
+    {
+        List<string> AllTheWords = new List<string>();
+        for (int i = 0; i < Dictionarys.Length; i++)
+        {
+            foreach (string s in Dictionarys[i].Keys)
+            {
+                if (!AllTheWords.Contains(s))
+                    AllTheWords.Add(s);
+            }
+        }
+        return AllTheWords;
+    }
+
+    int[] GetNumberOfDocsEachWordAppears(int[,] Matrix)
+    {
+        int[] NumberOfDocsEachWordAppears = new int[Matrix.GetLength(1)];
+
+        for (int y = 0; y < tf.GetLength(0); y++)
+        {
+            for (int x = 0; x < tf.GetLength(1); x++)
+            {
+                if (Matrix[x, y] != 0)
+                    NumberOfDocsEachWordAppears[y] += 1;
+            }
+        }
+        return NumberOfDocsEachWordAppears;
+    }
+}
+
+
+// void WriteDict(Dictionary<string, int> Dict)
 // {
 //     foreach (string s in Dict.Keys)
 //     {
@@ -48,18 +143,6 @@ using System;
 //     }
 //     System.Console.WriteLine();
 // }
-
-// var Dictionarys = GetWordDictionarys(files);
-
-// for (int i = 0; i < files.Length; i++)
-// {
-//     string Filename = Path.GetFileNameWithoutExtension(files[i]);
-//     System.Console.WriteLine(Filename);
-//     WriteDictInSearchData(Dictionarys[i]);
-// }
-
-
-
 
 // foreach (string file in files)
 // {
@@ -102,6 +185,3 @@ using System;
 //     }
 //     return dict;
 // }
-
-
-
