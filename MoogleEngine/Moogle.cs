@@ -8,8 +8,6 @@ public static class Moogle
 {
     public static SearchResult Query(string query)//Este es el metodo PrincipalMAIN METHOD
     {
-        var timer = new Stopwatch();
-        timer.Start();
 
         string content = @"E:\Prog\moogle\moogle-main\Content";
 
@@ -26,8 +24,10 @@ public static class Moogle
         var SearchValues = MatricesWork.VecXMatrix(QueryVec, Matrix);
         SearchItem[] searchItems = GetSearchItems(SearchValues);
         string Suggestion = "GetSuggestion";
-        SearchResult result = new SearchResult(searchItems,Suggestion);
-        
+        SearchResult result = new SearchResult(searchItems, Suggestion);
+
+
+
         return result;
 
 
@@ -60,7 +60,7 @@ public static class Moogle
         string[] query_array = query.Split();
         string text = File.ReadAllText(filePath);
         int middle = -1;
-        int SnipLeng = 300;
+        int SnipLeng = 500;
 
         foreach (string word in query_array)
         {
@@ -72,10 +72,10 @@ public static class Moogle
                 if (text.Length - middle <= SnipLeng)
                     return text.Substring(middle, text.Length - middle);
 
-                if (middle < 150)
+                if (middle < 250)
                     return text.Substring(0, SnipLeng);
                 else
-                    return text.Substring(middle - 150, SnipLeng);
+                    return text.Substring(middle - 250, SnipLeng);
             }
         }
         return " ";
@@ -165,21 +165,69 @@ public static class Moogle
         }
         return dict;
     }
-    static List<string> GetNecessaryWords(string query)
+    static double[,] NotAllowedandNecessaryOp(string query, List<string> AllTheWords, double[,] Matrix)
     {
         string[] query_array = query.Split();
-        List<string> GetNecessaryWords = new List<string>();
+        List<string> NecessaryWords = new List<string>();
+        List<string> NotAllowedWords = new List<string>();
+
         if (query == "")
-            return GetNecessaryWords;
+            return Matrix;
+
         foreach (string word in query_array)
         {
             if (word[0].ToString() == "^")
-                GetNecessaryWords.Add(word.Substring(1));
+                NecessaryWords.Add(word.Substring(1));
+            if (word[0].ToString() == "!")
+                NotAllowedWords.Add(word.Substring(1));
         }
-        return GetNecessaryWords;
+
+        List<int> Necessaryindexes = new List<int>();
+        List<int> NotAllowedindexes = new List<int>();
+
+        foreach (string word in NecessaryWords)
+        {
+            if (AllTheWords.Contains(word))
+            {
+                Necessaryindexes.Add(AllTheWords.IndexOf(word));
+            }
+        }
+        foreach (string word in NotAllowedWords)
+        {
+            if (AllTheWords.Contains(word))
+            {
+                NotAllowedindexes.Add(AllTheWords.IndexOf(word));
+            }
+        }
+
+        foreach (int i in Necessaryindexes)
+        {
+            for (int x = 0; x < Matrix.GetLength(0); x++)
+            {
+                if (Matrix[x, i] == 0)
+                {
+                    for (int y = 0; y < Matrix.GetLength(1); y++)
+                        Matrix[x, y] = 0;
+                }
+            }
+        }
+        foreach (int i in NotAllowedindexes)
+        {
+            for (int x = 0; x < Matrix.GetLength(0); x++)
+            {
+                if (Matrix[x, i] != 0)
+                {
+                    for (int y = 0; y < Matrix.GetLength(1); y++)
+                        Matrix[x, y] = 0;
+                }
+            }
+        }
+
+        return Matrix;
     }
 
-    static Dictionary<string, int> GetImportance(string query)
+
+    static double[,] GetImportance(string query,List<string> AllTheWords, double[,] Matrix)
     {
         string pattern = @"^\*";
         Regex obj = new Regex(pattern);
@@ -201,6 +249,20 @@ public static class Moogle
                 Importance[word.Substring(index)] = asterisc;
             }
         }
-        return Importance;
+
+        foreach(string word in Importance.Keys)
+        {
+            int index = 0;
+            int raise = Importance[word];
+            if(AllTheWords.Contains(word))
+            {
+                index = AllTheWords.IndexOf(word);
+                for(int x=0; x<Matrix.GetLength(0);x++)
+                {
+                    Matrix[x,index] = (double)raise*Matrix[x,index];
+                } 
+            }
+        }
+        return Matrix;
     }
 }
