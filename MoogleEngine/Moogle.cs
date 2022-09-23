@@ -21,12 +21,12 @@ public static class Moogle
         var QueryVec = MatricesWork.Sentence2Vec(search_query, AllTheWords);
         var PreMatrix = MatricesWork.GetMatrix(files, Dictionarys, AllTheWords);
         var Matrix = MatricesWork.tf_idf(PreMatrix);
+        Matrix = GetImportance(query, AllTheWords, Matrix);
+        Matrix = NotAllowedandNecessaryOp(query, AllTheWords, Matrix);
         var SearchValues = MatricesWork.VecXMatrix(QueryVec, Matrix);
         SearchItem[] searchItems = GetSearchItems(SearchValues);
-        string Suggestion = "GetSuggestion";
+        string Suggestion = GetSuggestion(AllTheWords, search_query);
         SearchResult result = new SearchResult(searchItems, Suggestion);
-
-
 
         return result;
 
@@ -41,6 +41,7 @@ public static class Moogle
                 string FileName = "";
                 string Snippet = "";
                 float Score = 0;
+
                 if (SearchValues[i] != 0)
                 {
                     FileName = Path.GetFileNameWithoutExtension(files[i]);
@@ -81,16 +82,12 @@ public static class Moogle
         return " ";
     }
 
-
-
-    static double GetCLoseWords(string text, string query, Dictionary<string, int> Dict)
+    static double[,] Cercania(double[,] Matrix, List<string> AllTheWords, string[] files, string query, Dictionary<string, int>[] Dictionarys)
     {
         string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
         Regex obj = new Regex(pattern);
-
-        List<int> distances = new List<int>();
-
         string[] query_array = query.Split();
+        List<int> TextIndexes = new List<int>();
 
         if (query_array.Length >= 3)
         {
@@ -98,35 +95,89 @@ public static class Moogle
             {
                 string LeftWord = query_array[i];
                 string RightWord = query_array[i + 2];
+                string[] NearWords = { LeftWord, RightWord };
 
-                if (obj.IsMatch(query_array[i + 1]) && Dict.ContainsKey(LeftWord) && Dict.ContainsKey(RightWord))
+                if (obj.IsMatch(query_array[i + 1]) && AllTheWords.Contains(LeftWord) && AllTheWords.Contains(RightWord))
                 {
-                    var LeftWordIndexes = GetIndexes(text, query_array[i], Dict[query_array[i]]);
-                    var RightWordIndexes = GetIndexes(text, query_array[i + 2], Dict[query_array[i + 2]]);
+                    TextIndexes = GetTextIndexes(AllTheWords, Matrix, LeftWord, RightWord);
 
-                    foreach (int indexL in LeftWordIndexes)
+                    foreach (int index in TextIndexes)
                     {
-                        foreach (int indexR in RightWordIndexes)
+                        string text = File.ReadAllText(files[index]);
+                        double dist = GetShortestDistance(text, LeftWord, RightWord, Dictionarys, index);
+                        for (int y = 0; y < Matrix.GetLength(1); y++)
                         {
-                            int distance = (Math.Abs(indexL - indexR));
-                            distances.Add(distance);
+                            if (Matrix[index, y] != 0)
+                            {
+                                Matrix[index, y] = Matrix[index, y] * dist;
+                            }
                         }
+                    }
+
+                }
+            }
+        }
+
+        return Matrix;
+
+    }
+
+    static double GetShortestDistance(string text, string LeftWord, string RightWord, Dictionary<string, int>[] Dictionarys, int index)
+    {
+        var LeftWordIndexes = GetIndexes(text, LeftWord, Dictionarys[index][LeftWord]);
+        var RightWordIndexes = GetIndexes(text, RightWord, Dictionarys[index][RightWord]);
+        List<int> distances = new List<int>();
+
+        foreach (int indexL in LeftWordIndexes)
+        {
+            foreach (int indexR in RightWordIndexes)
+            {
+                int distance = (Math.Abs(indexL - indexR));
+                distances.Add(distance);
+            }
+        }
+        double ans = distances[0];
+        if (distances.Count >= 1)
+        {
+            foreach (int dist in distances)
+            {
+                if (dist < ans)
+                    ans = dist;
+            }
+        }
+        return (double)1 + (double)1 / ans * 2;
+
+    }
+    static List<int> GetTextIndexes(List<string> AllTheWords, double[,] Matrix, string LeftWord, string RightWord)
+    {
+        List<int> TextIndexes = new List<int>();
+        for (int y = 0; y < AllTheWords.Count; y++)
+        {
+            if (AllTheWords[y] == LeftWord || AllTheWords[y] == RightWord)
+            {
+                for (int x = 0; x < Matrix.GetLength(0); x++)
+                {
+                    if (Matrix[x, y] != 0)
+                    {
+                        TextIndexes.Add(x);
                     }
                 }
             }
-            if (distances.Count >= 1)
+            if (AllTheWords[y] == LeftWord || AllTheWords[y] == RightWord)
             {
-                int ans = distances[0];
-                foreach (int dist in distances)
+                for (int x = 0; x < Matrix.GetLength(0); x++)
                 {
-                    if (dist < ans)
-                        ans = dist;
+                    if (Matrix[x, y] == 0 && TextIndexes.Contains(x))
+                    {
+                        TextIndexes.Remove(x);
+                    }
                 }
-                return ans;
             }
         }
-        return 1;
+        return TextIndexes;
     }
+
+
 
     static int[] GetIndexes(string text, string word, int cant)
     {
@@ -227,7 +278,7 @@ public static class Moogle
     }
 
 
-    static double[,] GetImportance(string query,List<string> AllTheWords, double[,] Matrix)
+    static double[,] GetImportance(string query, List<string> AllTheWords, double[,] Matrix)
     {
         string pattern = @"^\*";
         Regex obj = new Regex(pattern);
@@ -250,19 +301,61 @@ public static class Moogle
             }
         }
 
-        foreach(string word in Importance.Keys)
+        foreach (string word in Importance.Keys)
         {
             int index = 0;
             int raise = Importance[word];
-            if(AllTheWords.Contains(word))
+            if (AllTheWords.Contains(word))
             {
                 index = AllTheWords.IndexOf(word);
-                for(int x=0; x<Matrix.GetLength(0);x++)
+                for (int x = 0; x < Matrix.GetLength(0); x++)
                 {
-                    Matrix[x,index] = (double)raise*Matrix[x,index];
-                } 
+                    Matrix[x, index] = (double)raise * Matrix[x, index];
+                }
             }
         }
         return Matrix;
     }
+    public static string GetSuggestion(List<string> AllTheWords, string query)
+    {
+        string MoreSimilarSentence = "";
+        string[] query_array = query.Split();
+
+        foreach (string q in query_array)
+        {
+            int max = 0;
+            string MoreSimilarWord = query;
+            foreach (string word in AllTheWords)
+            {
+                if (IsSimilar(q, word) > max)
+                {
+                    max = IsSimilar(q, word);
+                    MoreSimilarWord = word;
+                }
+            }
+            MoreSimilarSentence += " " + MoreSimilarWord;
+        }
+        return MoreSimilarSentence;
+    }
+
+    public static int IsSimilar(string query, string word)
+    {
+        int ans = 0;
+        List<char> QueryList = query.ToList<char>();
+        List<char> WordList = word.ToList<char>();
+        int i = 0;
+        // foreach (char c in QueryList)
+
+        while (i < QueryList.Count & i < WordList.Count)
+        {
+            if (WordList[i] == QueryList[i])
+                ans += 1;
+            else
+                ans -= 1;
+            i++;
+        }
+        return ans;
+    }
+
+
 }

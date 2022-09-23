@@ -2,24 +2,11 @@ namespace MoogleEngine
 {
     class Suggestion
     {
-        public static string GetSuggestion(string[] Files, string query)
+        public static string GetSuggestion(List<string> AllTheWords, string query)
         {
-            List<string> AllTheWords = new List<string>();
             int max = 0;
             string MoreSimilarWord = query;
             string[] query_array = query.Split();
-
-            foreach (string file in Files)// De este loop salgo con todas las palbaras en la lista
-            {
-                string[] CurrentFile = File.ReadAllText(file).Split();
-                foreach (string word in CurrentFile)
-                {
-                    if (word == query)
-                        return query;
-                    if (!AllTheWords.Contains(word))
-                        AllTheWords.Add(word);
-                }
-            }
 
             foreach (string word in AllTheWords)
             {
@@ -32,7 +19,6 @@ namespace MoogleEngine
                     }
                 }
             }
-
             return MoreSimilarWord;
         }
 
