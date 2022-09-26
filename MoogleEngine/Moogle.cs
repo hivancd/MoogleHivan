@@ -10,17 +10,15 @@ public static class Moogle
     {
 
         string content = @"E:\Prog\moogle\moogle-main\Content";
-
-
-        // var Importance = GetImportance(query);
         string search_query = QueryProcessing.ProcessQuery(query);
-
+        query = QueryProcessing.erase_whitespace(query);
         string[] files = Directory.GetFiles(content);
         var Dictionarys = MatricesWork.GetWordDictionarys(files);
         var AllTheWords = MatricesWork.GetAllTheWords(Dictionarys);
         var QueryVec = MatricesWork.Sentence2Vec(search_query, AllTheWords);
         var PreMatrix = MatricesWork.GetMatrix(files, Dictionarys, AllTheWords);
         var Matrix = MatricesWork.tf_idf(PreMatrix);
+        Matrix = Cercania(Matrix, AllTheWords, files, query);
         Matrix = GetImportance(query, AllTheWords, Matrix);
         Matrix = NotAllowedandNecessaryOp(query, AllTheWords, Matrix);
         var SearchValues = MatricesWork.VecXMatrix(QueryVec, Matrix);
@@ -56,7 +54,7 @@ public static class Moogle
         }
 
     }
-    public static string GetSnip(string filePath, string query)//Este metodo coge el snip (Es mejorable)ARREGLAR
+    public static string GetSnip(string filePath, string query)//Este metodo coge el snip 
     {
         string[] query_array = query.Split();
         string text = File.ReadAllText(filePath);
@@ -82,7 +80,7 @@ public static class Moogle
         return " ";
     }
 
-    static double[,] Cercania(double[,] Matrix, List<string> AllTheWords, string[] files, string query, Dictionary<string, int>[] Dictionarys)
+    static double[,] Cercania(double[,] Matrix, List<string> AllTheWords, string[] files, string query)// Metodo de el operador de cercania ~
     {
         string pattern = @"[ ~ ]||[~]||[ ~]||[~ ]";
         Regex obj = new Regex(pattern);
@@ -100,11 +98,10 @@ public static class Moogle
                 if (obj.IsMatch(query_array[i + 1]) && AllTheWords.Contains(LeftWord) && AllTheWords.Contains(RightWord))
                 {
                     TextIndexes = GetTextIndexes(AllTheWords, Matrix, LeftWord, RightWord);
-
                     foreach (int index in TextIndexes)
                     {
                         string text = File.ReadAllText(files[index]);
-                        double dist = GetShortestDistance(text, LeftWord, RightWord, Dictionarys, index);
+                        double dist = GetShortestDistance(text, LeftWord, RightWord);
                         for (int y = 0; y < Matrix.GetLength(1); y++)
                         {
                             if (Matrix[index, y] != 0)
@@ -122,12 +119,15 @@ public static class Moogle
 
     }
 
-    static double GetShortestDistance(string text, string LeftWord, string RightWord, Dictionary<string, int>[] Dictionarys, int index)
+    static double GetShortestDistance(string text, string LeftWord, string RightWord)//Metodo auxiliar del operador de cercania
     {
-        var LeftWordIndexes = GetIndexes(text, LeftWord, Dictionarys[index][LeftWord]);
-        var RightWordIndexes = GetIndexes(text, RightWord, Dictionarys[index][RightWord]);
+        
+        var LeftWordIndexes = GetIndexes(text, LeftWord);
+        var RightWordIndexes = GetIndexes(text, RightWord);
         List<int> distances = new List<int>();
 
+        if(LeftWordIndexes.Count == 0 || RightWordIndexes.Count == 0)
+            return 1;
         foreach (int indexL in LeftWordIndexes)
         {
             foreach (int indexR in RightWordIndexes)
@@ -136,7 +136,8 @@ public static class Moogle
                 distances.Add(distance);
             }
         }
-        double ans = distances[0];
+
+        double ans = (double)distances[0];
         if (distances.Count >= 1)
         {
             foreach (int dist in distances)
@@ -145,7 +146,7 @@ public static class Moogle
                     ans = dist;
             }
         }
-        return (double)1 + (double)1 / ans * 2;
+        return (double)1 + (double)1 / ans* 2;
 
     }
     static List<int> GetTextIndexes(List<string> AllTheWords, double[,] Matrix, string LeftWord, string RightWord)
@@ -177,45 +178,19 @@ public static class Moogle
         return TextIndexes;
     }
 
-
-
-    static int[] GetIndexes(string text, string word, int cant)
+     static List<int> GetIndexes(string text, string word)
     {
-        int[] AllIndexes = new int[cant];
-        int wordIndex = text.IndexOf(word);
-        int Mark = 0;
+        string[] text_array = text.Split();
+        List<int> AllIndexes = new List<int>();
 
-        for (int i = 0; i < cant; i++)
+        for (int i = 0; i < text_array.Length; i++)
         {
-            AllIndexes[i] = text.Substring(Mark + word.Length).IndexOf(word);
-            Mark = AllIndexes[i];
+            if(text_array[i] == word)
+                AllIndexes.Add(i);
         }
         return AllIndexes;
     }
 
-
-    static Dictionary<string, int> Query_and_docs_occur(string search_query, Dictionary<string, int>[] Dictionarys)
-    {
-        string[] search_query_array = search_query.Split();
-        Dictionary<string, int> dict = new Dictionary<string, int>(search_query_array.Length);
-
-        foreach (string word in search_query_array)
-        {
-            if (!dict.ContainsKey(word))
-                dict.Add(word, 0);
-        }
-        for (int i = 0; i < Dictionarys.Length; i++)
-        {
-            foreach (string word in search_query_array)
-            {
-                if (word == "" || word == " ")
-                    continue;
-                else if (Dictionarys[i].Keys.Contains(word))
-                    dict[word] += 1;
-            }
-        }
-        return dict;
-    }
     static double[,] NotAllowedandNecessaryOp(string query, List<string> AllTheWords, double[,] Matrix)
     {
         string[] query_array = query.Split();
@@ -344,7 +319,6 @@ public static class Moogle
         List<char> QueryList = query.ToList<char>();
         List<char> WordList = word.ToList<char>();
         int i = 0;
-        // foreach (char c in QueryList)
 
         while (i < QueryList.Count & i < WordList.Count)
         {
